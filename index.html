@@ -89,6 +89,41 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 }
 #panel-save-btn:hover{background:#228b5e;}
 #panel-save-status{font-size:0.72rem;color:#7ecfaa;font-family:'DM Mono',monospace;}
+
+/* ── LINKS TAB ── */
+#panel-links-tab{display:none;flex-direction:column;flex:1;padding:14px;gap:10px;overflow-y:auto;}
+#panel-links-tab.active{display:flex;}
+#panel-links-tab.active{display:flex;}
+.link-item{display:flex;align-items:center;gap:8px;background:#1c2030;border:1px solid #3a4258;border-radius:6px;padding:8px 10px;}
+.link-item-label{flex:1;font-size:0.83rem;color:#e8eaf0;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.link-item-url{font-size:0.7rem;color:#8a95a8;font-family:'DM Mono',monospace;flex:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.link-btn{background:none;border:1px solid #3a4258;border-radius:4px;color:#8a95a8;font-size:0.72rem;cursor:pointer;padding:3px 8px;white-space:nowrap;}
+.link-btn:hover{border-color:#7ecfaa;color:#7ecfaa;}
+.link-btn.embed-on{border-color:#5a8fcc;color:#5a8fcc;}
+.link-btn.del{border-color:#3a2020;}
+.link-btn.del:hover{border-color:#cc4444;color:#cc4444;}
+#links-add-form{display:flex;flex-direction:column;gap:6px;border-top:1px solid #3a4258;padding-top:10px;margin-top:auto;}
+#links-add-form input{background:#1c2030;border:1px solid #3a4258;border-radius:5px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.83rem;padding:7px 10px;}
+#links-add-form input:focus{outline:none;border-color:#7ecfaa;}
+#links-add-form input::placeholder{color:#4a5570;}
+#links-add-row{display:flex;gap:8px;align-items:center;}
+#links-add-btn{background:#1a5276;border:none;color:#fff;padding:7px 16px;border-radius:5px;cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;}
+#links-add-btn:hover{background:#1f6694;}
+#links-status{font-size:0.72rem;color:#7ecfaa;font-family:'DM Mono',monospace;}
+.links-empty{font-size:0.8rem;color:#4a5570;text-align:center;padding:20px 0;}
+
+/* ── RESOURCES TAB ── */
+#panel-resources-tab{display:none;flex-direction:column;flex:1;overflow-y:auto;padding:14px;gap:12px;}
+#panel-resources-tab.active{display:flex;}
+.resource-item{background:#1c2030;border:1px solid #3a4258;border-radius:6px;overflow:hidden;}
+.resource-item-header{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#181c28;border-bottom:1px solid #3a4258;}
+.resource-item-label{flex:1;font-size:0.8rem;color:#e8eaf0;font-weight:500;}
+.resource-embed{width:100%;border:none;display:block;}
+.resource-embed-img{width:100%;max-height:400px;object-fit:contain;display:block;background:#0f1117;}
+.resource-no-embed{padding:12px;font-size:0.78rem;color:#8a95a8;display:flex;align-items:center;gap:8px;}
+.resource-no-embed a{color:#5a8fcc;text-decoration:none;}
+.resource-no-embed a:hover{color:#7ecfaa;}
+.resources-empty{font-size:0.8rem;color:#4a5570;text-align:center;padding:20px 0;}
 </style>
 </head>
 <body>
@@ -801,9 +836,18 @@ async function openPanel(entry) {
 
   // Notes
   const noteKey = 'note_'+entry.section+'_p'+entry.pEnd;
+  _currentNoteKey = noteKey;
   document.getElementById('panel-notes').value = await loadNote(noteKey);
   document.getElementById('panel-save-status').textContent = '';
   document.getElementById('panel-save-btn').onclick = () => saveNote(noteKey);
+
+  // Links — clear and load async
+  document.getElementById('links-list').innerHTML = '<div class="links-empty">Loading…</div>';
+  document.getElementById('resources-list').innerHTML = '';
+  document.getElementById('link-input-label').value = '';
+  document.getElementById('link-input-url').value = '';
+  document.getElementById('links-status').textContent = '';
+  refreshLinksTab(noteKey);
 
   switchTab('book');
   document.getElementById('panel-overlay').classList.add('open');
@@ -817,15 +861,16 @@ function closePanel() {
 
 function switchTab(tab) {
   document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-book-frame').classList.remove('active');
-  document.getElementById('panel-notes-tab').classList.remove('active');
-  if (tab === 'book') {
-    document.querySelector('[data-tab="book"]').classList.add('active');
-    document.getElementById('panel-book-frame').classList.add('active');
-  } else {
-    document.querySelector('[data-tab="notes"]').classList.add('active');
-    document.getElementById('panel-notes-tab').classList.add('active');
-  }
+  ['panel-book-frame','panel-notes-tab','panel-links-tab','panel-resources-tab']
+    .forEach(id => document.getElementById(id).classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  const map = {
+    book: 'panel-book-frame',
+    notes: 'panel-notes-tab',
+    links: 'panel-links-tab',
+    resources: 'panel-resources-tab',
+  };
+  if (map[tab]) document.getElementById(map[tab]).classList.add('active');
 }
 
 // ── NOTES STORAGE — Supabase ─────────────────────────────────────────────────
@@ -865,6 +910,126 @@ async function saveNote(key) {
   setTimeout(() => { s.textContent = ''; }, 3000);
 }
 
+// ── LINKS & RESOURCES ────────────────────────────────────────────────────────
+let _currentNoteKey = null;
+const _linksCache = {};
+
+async function loadLinks(key) {
+  if (_linksCache[key]) return _linksCache[key];
+  try {
+    const { data } = await _sb.from('links')
+      .select('*').eq('note_key', key).order('sort_order').order('created_at');
+    _linksCache[key] = data || [];
+    return _linksCache[key];
+  } catch { return []; }
+}
+
+async function addLink(key, label, url, embed) {
+  const maxOrder = (_linksCache[key] || []).reduce((m, l) => Math.max(m, l.sort_order || 0), 0);
+  const { data, error } = await _sb.from('links')
+    .insert({ note_key: key, label, url, embed, sort_order: maxOrder + 1 })
+    .select().single();
+  if (!error && data) {
+    if (!_linksCache[key]) _linksCache[key] = [];
+    _linksCache[key].push(data);
+  }
+  return { error };
+}
+
+async function deleteLink(id, key) {
+  await _sb.from('links').delete().eq('id', id);
+  if (_linksCache[key]) _linksCache[key] = _linksCache[key].filter(l => l.id !== id);
+}
+
+async function toggleEmbed(id, key, newVal) {
+  await _sb.from('links').update({ embed: newVal }).eq('id', id);
+  if (_linksCache[key]) {
+    const item = _linksCache[key].find(l => l.id === id);
+    if (item) item.embed = newVal;
+  }
+}
+
+function youtubeEmbedUrl(url) {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+}
+
+function isImage(url) {
+  return /\.(png|jpe?g|gif|svg|webp)(\?.*)?$/i.test(url);
+}
+
+function isPdf(url) {
+  return /\.pdf(\?.*)?$/i.test(url);
+}
+
+function renderLinksList(links, key) {
+  const list = document.getElementById('links-list');
+  if (!links.length) {
+    list.innerHTML = '<div class="links-empty">No links yet — add one below</div>';
+    return;
+  }
+  list.innerHTML = links.map(l => `
+    <div class="link-item" data-id="${l.id}">
+      <span class="link-item-label" title="${l.label}">${l.label}</span>
+      <span class="link-item-url" title="${l.url}">${l.url}</span>
+      <a href="${l.url}" target="_blank" class="link-btn">Open</a>
+      <button class="link-btn embed-btn ${l.embed ? 'embed-on' : ''}" title="${l.embed ? 'Remove from Resources' : 'Show in Resources'}">${l.embed ? '📌 Embedded' : '📌 Embed'}</button>
+      <button class="link-btn del del-btn">✕</button>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.del-btn').forEach((btn, i) => {
+    btn.addEventListener('click', async () => {
+      await deleteLink(links[i].id, key);
+      renderLinksList(_linksCache[key] || [], key);
+      renderResourcesList(_linksCache[key] || []);
+    });
+  });
+  list.querySelectorAll('.embed-btn').forEach((btn, i) => {
+    btn.addEventListener('click', async () => {
+      const newVal = !links[i].embed;
+      await toggleEmbed(links[i].id, key, newVal);
+      renderLinksList(_linksCache[key] || [], key);
+      renderResourcesList(_linksCache[key] || []);
+    });
+  });
+}
+
+function renderResourcesList(links) {
+  const list = document.getElementById('resources-list');
+  const embeds = links.filter(l => l.embed);
+  if (!embeds.length) {
+    list.innerHTML = '<div class="resources-empty">No resources yet — add a link and click 📌 Embed to show it here</div>';
+    return;
+  }
+  list.innerHTML = embeds.map(l => {
+    const ytUrl = youtubeEmbedUrl(l.url);
+    let body = '';
+    if (isImage(l.url)) {
+      body = `<img class="resource-embed-img" src="${l.url}" alt="${l.label}" loading="lazy">`;
+    } else if (ytUrl) {
+      body = `<iframe class="resource-embed" src="${ytUrl}" height="280" allowfullscreen></iframe>`;
+    } else if (isPdf(l.url)) {
+      body = `<iframe class="resource-embed" src="${l.url}" height="400"></iframe>`;
+    } else {
+      body = `<div class="resource-no-embed">⚠ Can't embed this URL directly — <a href="${l.url}" target="_blank">open in new tab</a></div>`;
+    }
+    return `<div class="resource-item">
+      <div class="resource-item-header">
+        <span class="resource-item-label">${l.label}</span>
+        <a href="${l.url}" target="_blank" class="link-btn">Open</a>
+      </div>
+      ${body}
+    </div>`;
+  }).join('');
+}
+
+async function refreshLinksTab(key) {
+  const links = await loadLinks(key);
+  renderLinksList(links, key);
+  renderResourcesList(links);
+}
+
 </script>
 
 <!-- ── LESSON PANEL ── -->
@@ -877,12 +1042,15 @@ async function saveNote(key) {
     <button id="panel-close" title="Close">&#x2715;</button>
   </div>
   <div id="panel-tabs">
-    <div class="panel-tab active" data-tab="book">&#x1F4D6; Book section</div>
+    <div class="panel-tab active" data-tab="book">&#x1F4D6; Book</div>
     <div class="panel-tab" data-tab="notes">&#x1F4DD; Notes</div>
-    <a id="panel-book-link" href="#" target="_blank">&#x2197; Open full book</a>
+    <div class="panel-tab" data-tab="links">&#x1F517; Links</div>
+    <div class="panel-tab" data-tab="resources">&#x1F5BC; Resources</div>
+    <a id="panel-book-link" href="#" target="_blank">&#x2197; Full book</a>
   </div>
   <div id="panel-body">
     <iframe id="panel-book-frame" class="active" sandbox="allow-same-origin allow-scripts"></iframe>
+
     <div id="panel-notes-tab">
       <div id="panel-notes-label">Session notes — saved to Supabase (local backup always kept)</div>
       <textarea id="panel-notes" placeholder="Teaching notes, student feedback, pace adjustments…"></textarea>
@@ -891,6 +1059,23 @@ async function saveNote(key) {
         <span id="panel-save-status"></span>
       </div>
     </div>
+
+    <div id="panel-links-tab">
+      <div id="links-list"></div>
+      <div id="links-add-form">
+        <input id="link-input-label" type="text" placeholder="Label (e.g. Khan Academy — BIDMAS)">
+        <div id="links-add-row">
+          <input id="link-input-url" type="url" placeholder="https://…" style="flex:1">
+          <button id="links-add-btn">Add link</button>
+        </div>
+        <span id="links-status"></span>
+      </div>
+    </div>
+
+    <div id="panel-resources-tab">
+      <div id="resources-list"></div>
+    </div>
+
   </div>
 </div>
 
@@ -900,6 +1085,28 @@ document.getElementById('panel-close').addEventListener('click', closePanel);
 document.getElementById('panel-overlay').addEventListener('click', closePanel);
 document.querySelectorAll('.panel-tab').forEach(t => {
   t.addEventListener('click', () => switchTab(t.dataset.tab));
+});
+
+document.getElementById('links-add-btn').addEventListener('click', async () => {
+  const label = document.getElementById('link-input-label').value.trim();
+  const url   = document.getElementById('link-input-url').value.trim();
+  const status = document.getElementById('links-status');
+  if (!url) { status.textContent = 'Please enter a URL'; return; }
+  const displayLabel = label || url;
+  status.textContent = 'Saving…';
+  const { error } = await addLink(_currentNoteKey, displayLabel, url, false);
+  if (error) { status.textContent = 'Error saving ⚠'; return; }
+  document.getElementById('link-input-label').value = '';
+  document.getElementById('link-input-url').value = '';
+  status.textContent = 'Added ✓';
+  setTimeout(() => { status.textContent = ''; }, 2000);
+  renderLinksList(_linksCache[_currentNoteKey] || [], _currentNoteKey);
+  renderResourcesList(_linksCache[_currentNoteKey] || []);
+});
+
+// Also allow Enter in URL field to submit
+document.getElementById('link-input-url').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('links-add-btn').click();
 });
 </script>
 
