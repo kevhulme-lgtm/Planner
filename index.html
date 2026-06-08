@@ -3,1145 +3,253 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2209A 088 — Course Planner</title>
+<title>Course Planner</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:#0f1117;color:#e8eaf0;padding:20px;}
-h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spacing:0.05em;color:#7ecfaa;margin-bottom:6px;}
-.subtitle{font-size:0.8rem;color:#8a95a8;margin-bottom:16px;}
-.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;padding:10px 14px;background:#181c28;border:1px solid #3a4258;border-radius:8px;}
-.legend-item{display:flex;align-items:center;gap:7px;font-size:0.75rem;color:#c0c8d8;font-weight:500;}
-.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
-.nav{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
-.nav button{background:#252b3d;border:1px solid #4a5570;color:#e0e6f0;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:0.85rem;font-family:'DM Sans',sans-serif;font-weight:500;transition:all 0.15s;}
-.nav button:hover{background:#2e3650;border-color:#6a7a9a;}
-.nav button:disabled{opacity:0.3;cursor:default;}
-.week-label{font-family:'DM Mono',monospace;font-size:0.95rem;color:#e8eaf0;min-width:130px;text-align:center;font-weight:500;}
-.week-range{font-size:0.78rem;color:#8a95a8;}
-.grid{display:grid;grid-template-columns:80px repeat(5,1fr);gap:3px;background:#3a4258;border-radius:10px;overflow:hidden;border:2px solid #3a4258;min-width:600px;}
-.grid-wrap{overflow-x:auto;}
-.grid-header{background:#1e2336;padding:9px 6px;font-size:0.72rem;color:#8a95a8;font-family:'DM Mono',monospace;text-align:center;border-bottom:2px solid #3a4258;}
-.day-header{color:#e0e6f0;font-size:0.78rem;font-weight:600;}
-.date-sub{font-size:0.65rem;color:#7a85a0;margin-top:3px;}
-.slot-label{background:#1e2336;padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:2px solid #3a4258;}
-.slot-name{font-size:0.68rem;font-family:'DM Mono',monospace;color:#c0c8d8;font-weight:500;}
-.slot-time{font-size:0.6rem;color:#6a75a0;margin-top:2px;}
-.cell{min-height:80px;padding:7px;transition:all 0.1s;position:relative;}
-.cell-empty{background:#12151f;}
-.cell-other{background:#1c2030;display:flex;align-items:center;justify-content:center;}
-.cell-other-label{font-size:0.72rem;color:#8a95b8;text-align:center;line-height:1.4;padding:2px;font-weight:500;}
-.cell-ped{background:#2a1f0a;display:flex;align-items:center;justify-content:center;border-left:4px solid #d4870a;}
-.cell-ped-label{font-size:0.72rem;color:#f0a830;text-align:center;line-height:1.4;padding:2px;font-weight:600;}
-.cell-exam-other{background:#2a1018;display:flex;align-items:center;justify-content:center;border-left:4px solid #8b2020;}
-.cell-exam-other-label{font-size:0.72rem;color:#e07070;text-align:center;line-height:1.4;padding:2px;font-weight:500;}
-.cell-maths{cursor:grab;display:flex;flex-direction:column;gap:3px;}
-.cell-maths:active{cursor:grabbing;opacity:0.8;}
-.cell-maths.drag-over{outline:2px dashed #7ecfaa;outline-offset:-2px;}
-.cell-empty.drag-over{outline:2px dashed #7ecfaa;outline-offset:-2px;background:#1a2030;}
-.cell-tag{font-size:0.58rem;font-family:'DM Mono',monospace;color:white;padding:2px 6px;border-radius:3px;font-weight:600;letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cell-main{font-size:0.75rem;color:#1a1a1a;font-weight:600;line-height:1.3;flex:1;}
-.cell-period{font-size:0.62rem;font-family:'DM Mono',monospace;color:#4a5570;margin-top:auto;font-weight:500;}
-.cell-main-exam{font-size:0.75rem;color:#fff;font-weight:600;line-height:1.3;flex:1;}
-.cell-period-exam{font-size:0.62rem;font-family:'DM Mono',monospace;color:#ffaaaa;margin-top:auto;font-weight:500;}
+body{font-family:'DM Sans',sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh;padding:32px 24px;}
+h1{font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:500;color:#7ecfaa;letter-spacing:0.05em;}
+.subtitle{font-size:0.82rem;color:#8a95a8;margin-top:4px;}
+header{margin-bottom:32px;}
 
-/* ── LESSON PANEL ── */
-#panel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;}
-#panel-overlay.open{display:block;}
-#lesson-panel{
-  position:fixed;top:0;right:-740px;width:min(740px,100vw);height:100vh;
-  background:#12151f;border-left:2px solid #3a4258;
-  display:flex;flex-direction:column;z-index:101;
-  transition:right 0.25s ease;
-}
-#lesson-panel.open{right:0;}
-#panel-header{
-  display:flex;align-items:center;gap:10px;padding:12px 16px;
-  background:#181c28;border-bottom:1px solid #3a4258;flex-shrink:0;flex-wrap:wrap;
-}
-#panel-klp-ref{font-family:'DM Mono',monospace;font-size:0.7rem;color:#7ecfaa;white-space:nowrap;}
-#panel-klp-title{font-size:0.88rem;font-weight:600;color:#e8eaf0;flex:1;min-width:0;}
-#panel-period{font-family:'DM Mono',monospace;font-size:0.7rem;color:#8a95a8;white-space:nowrap;}
-#panel-close{background:none;border:none;color:#8a95a8;font-size:1.3rem;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0;}
-#panel-close:hover{color:#e8eaf0;}
-#panel-tabs{display:flex;align-items:stretch;background:#181c28;border-bottom:1px solid #3a4258;flex-shrink:0;}
-.panel-tab{padding:8px 16px;font-size:0.78rem;cursor:pointer;color:#8a95a8;border-bottom:2px solid transparent;font-weight:500;white-space:nowrap;}
-.panel-tab.active{color:#7ecfaa;border-bottom-color:#7ecfaa;}
-#panel-book-link{margin-left:auto;align-self:center;padding:0 14px;font-size:0.73rem;color:#5a8fcc;text-decoration:none;}
-#panel-book-link:hover{color:#7ecfaa;}
-#panel-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-#panel-book-frame{width:100%;flex:1;border:none;display:none;background:#fff;}
-#panel-book-frame.active{display:block;}
-#panel-notes-tab{display:none;flex-direction:column;flex:1;padding:14px;}
-#panel-notes-tab.active{display:flex;}
-#panel-notes-label{font-size:0.72rem;color:#8a95a8;margin-bottom:8px;font-family:'DM Mono',monospace;}
-#panel-notes{
-  flex:1;background:#1c2030;border:1px solid #3a4258;border-radius:6px;
-  color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.87rem;
-  padding:12px;resize:none;line-height:1.65;
-}
-#panel-notes:focus{outline:none;border-color:#7ecfaa;}
-#panel-notes-actions{display:flex;align-items:center;gap:10px;margin-top:10px;}
-#panel-save-btn{
-  background:#1a6b4a;border:none;color:#fff;padding:7px 18px;border-radius:6px;
-  cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;font-weight:500;
-}
-#panel-save-btn:hover{background:#228b5e;}
-#panel-save-status{font-size:0.72rem;color:#7ecfaa;font-family:'DM Mono',monospace;}
+/* Plans grid */
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:32px;}
+.plan-card{background:#181c28;border:1px solid #3a4258;border-radius:10px;padding:18px 20px;cursor:pointer;transition:border-color 0.15s,background 0.15s;text-decoration:none;display:block;}
+.plan-card:hover{border-color:#7ecfaa;background:#1e2336;}
+.plan-card-profile{font-size:0.68rem;font-family:'DM Mono',monospace;color:#7ecfaa;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+.plan-card-title{font-size:1.05rem;font-weight:700;color:#e8eaf0;margin-bottom:4px;}
+.plan-card-date{font-size:0.78rem;color:#8a95a8;}
+.plan-card-meta{font-size:0.72rem;color:#4a5570;margin-top:8px;font-family:'DM Mono',monospace;}
 
-/* ── LINKS TAB ── */
-#panel-links-tab{display:none;flex-direction:column;flex:1;padding:14px;gap:10px;overflow-y:auto;}
-#panel-links-tab.active{display:flex;}
-#panel-links-tab.active{display:flex;}
-.link-item{display:flex;align-items:center;gap:8px;background:#1c2030;border:1px solid #3a4258;border-radius:6px;padding:8px 10px;}
-.link-item-label{flex:1;font-size:0.83rem;color:#e8eaf0;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.link-item-url{font-size:0.7rem;color:#8a95a8;font-family:'DM Mono',monospace;flex:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.link-btn{background:none;border:1px solid #3a4258;border-radius:4px;color:#8a95a8;font-size:0.72rem;cursor:pointer;padding:3px 8px;white-space:nowrap;}
-.link-btn:hover{border-color:#7ecfaa;color:#7ecfaa;}
-.link-btn.embed-on{border-color:#5a8fcc;color:#5a8fcc;}
-.link-btn.del{border-color:#3a2020;}
-.link-btn.del:hover{border-color:#cc4444;color:#cc4444;}
-#links-add-form{display:flex;flex-direction:column;gap:6px;border-top:1px solid #3a4258;padding-top:10px;margin-top:auto;}
-#links-add-form input{background:#1c2030;border:1px solid #3a4258;border-radius:5px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.83rem;padding:7px 10px;}
-#links-add-form input:focus{outline:none;border-color:#7ecfaa;}
-#links-add-form input::placeholder{color:#4a5570;}
-#links-add-row{display:flex;gap:8px;align-items:center;}
-#links-add-btn{background:#1a5276;border:none;color:#fff;padding:7px 16px;border-radius:5px;cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;}
-#links-add-btn:hover{background:#1f6694;}
-#links-status{font-size:0.72rem;color:#7ecfaa;font-family:'DM Mono',monospace;}
-.links-empty{font-size:0.8rem;color:#4a5570;text-align:center;padding:20px 0;}
+/* New plan button */
+.btn-new{display:inline-flex;align-items:center;gap:8px;background:#1a6b4a;border:none;color:#fff;
+  padding:10px 22px;border-radius:7px;cursor:pointer;font-size:0.88rem;font-family:'DM Sans',sans-serif;
+  font-weight:600;transition:background 0.15s;}
+.btn-new:hover{background:#228b5e;}
 
-/* ── RESOURCES TAB ── */
-#panel-resources-tab{display:none;flex-direction:column;flex:1;overflow-y:auto;padding:14px;gap:12px;}
-#panel-resources-tab.active{display:flex;}
-.resource-item{background:#1c2030;border:1px solid #3a4258;border-radius:6px;overflow:hidden;}
-.resource-item-header{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#181c28;border-bottom:1px solid #3a4258;}
-.resource-item-label{flex:1;font-size:0.8rem;color:#e8eaf0;font-weight:500;}
-.resource-embed{width:100%;border:none;display:block;}
-.resource-embed-img{width:100%;max-height:400px;object-fit:contain;display:block;background:#0f1117;}
-.resource-no-embed{padding:12px;font-size:0.78rem;color:#8a95a8;display:flex;align-items:center;gap:8px;}
-.resource-no-embed a{color:#5a8fcc;text-decoration:none;}
-.resource-no-embed a:hover{color:#7ecfaa;}
-.resources-empty{font-size:0.8rem;color:#4a5570;text-align:center;padding:20px 0;}
+/* Modal */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:50;align-items:center;justify-content:center;}
+#modal-overlay.open{display:flex;}
+#modal{background:#181c28;border:1px solid #3a4258;border-radius:12px;padding:28px 28px 24px;width:min(480px,95vw);max-height:90vh;overflow-y:auto;}
+#modal h2{font-family:'DM Mono',monospace;font-size:1rem;color:#7ecfaa;margin-bottom:20px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:0.78rem;color:#8a95a8;margin-bottom:6px;font-weight:500;}
+.field input,.field select{width:100%;background:#12151f;border:1px solid #3a4258;border-radius:6px;
+  color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.88rem;padding:9px 12px;}
+.field input:focus,.field select:focus{outline:none;border-color:#7ecfaa;}
+.field select option{background:#181c28;}
+.negated-row{display:flex;gap:8px;align-items:center;}
+.negated-row input{flex:1;}
+#negated-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.neg-chip{background:#1e2336;border:1px solid #3a4258;border-radius:4px;padding:3px 8px;
+  font-size:0.75rem;color:#c0c8d8;display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;}
+.neg-chip button{background:none;border:none;color:#8a95a8;cursor:pointer;font-size:0.85rem;padding:0;line-height:1;}
+.neg-chip button:hover{color:#e07070;}
+.modal-actions{display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:16px;border-top:1px solid #3a4258;}
+.btn-primary{background:#1a6b4a;border:none;color:#fff;padding:9px 22px;border-radius:6px;
+  cursor:pointer;font-size:0.88rem;font-family:'DM Sans',sans-serif;font-weight:600;}
+.btn-primary:hover{background:#228b5e;}
+.btn-primary:disabled{opacity:0.5;cursor:default;}
+.btn-cancel{background:none;border:1px solid #3a4258;color:#8a95a8;padding:9px 18px;border-radius:6px;
+  cursor:pointer;font-size:0.88rem;font-family:'DM Sans',sans-serif;}
+.btn-cancel:hover{border-color:#8a95a8;color:#e8eaf0;}
+#modal-status{font-size:0.78rem;color:#7ecfaa;font-family:'DM Mono',monospace;}
+
+.empty-state{color:#4a5570;font-size:0.88rem;padding:20px 0;}
+.loading{color:#4a5570;font-size:0.85rem;font-family:'DM Mono',monospace;}
 </style>
 </head>
 <body>
 
-<h1>2209A 088 — Course Planner</h1>
-<p class="subtitle">Drag maths sessions to adjust. Other sessions shown for context.</p>
+<header>
+  <h1>Course Planner</h1>
+  <p class="subtitle">Military Aviation Apprenticeship — TG5 Maths</p>
+</header>
 
-<div class="legend" id="legend"></div>
-<div class="nav">
-  <button id="btnPrev">← Prev</button>
-  <span class="week-label" id="weekLabel"></span>
-  <button id="btnNext">Next →</button>
-  <span class="week-range" id="weekRange"></span>
-</div>
-<div class="grid-wrap">
-  <div class="grid" id="grid"></div>
+<div id="plans-container" class="loading">Loading plans…</div>
+
+<button class="btn-new" id="btn-new-plan">＋ Create new plan</button>
+
+<!-- New Plan Modal -->
+<div id="modal-overlay">
+  <div id="modal">
+    <h2>Create new plan</h2>
+    <div class="field">
+      <label>Profile</label>
+      <select id="f-profile">
+        <option value="TG5">TG5 (2208A / 2209A / 2211A)</option>
+        <option value="TG1" disabled>TG1 — coming soon</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Course number</label>
+      <input id="f-course" type="text" placeholder="e.g. 088" maxlength="10">
+    </div>
+    <div class="field">
+      <label>Start date (first Monday of course)</label>
+      <input id="f-start" type="date">
+    </div>
+    <div class="field">
+      <label>Negated days (Air Days, bank holidays, leave)</label>
+      <div class="negated-row">
+        <input id="f-neg-date" type="date">
+        <button class="btn-cancel" id="btn-add-neg" style="white-space:nowrap">Add day</button>
+      </div>
+      <div id="negated-list"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="btn-create">Generate plan</button>
+      <button class="btn-cancel" id="btn-cancel">Cancel</button>
+      <span id="modal-status"></span>
+    </div>
+  </div>
 </div>
 
+<script src="tg5_template.js"></script>
 <script>
-// ── KLP DATA ──────────────────────────────────────────────────────────────
-const PT1 = {
-  1:"Diagnostic quiz / Decimal system / Estimation",
-  2:"Standard operators",3:"Standard operators",4:"Directed numbers",
-  5:"Fractions",6:"Operators on fractions",
-  7:"Operators on decimals",8:"Operators on decimals",
-  9:"Rounding / decimal types",
-  10:"FDP conversion",11:"FDP conversion",12:"FDP conversion",
-  13:"Percentage values",14:"Percentage values",
-  15:"Arithmetic ratios",
-  16:"Proportionality",17:"Proportionality",
-  18:"HCF & LCM",19:"HCF & LCM",
-  20:"BIDMAS",21:"BIDMAS",22:"BIDMAS",23:"BIDMAS",24:"BIDMAS",
-  25:"SI units",
-  26:"Indices & std form",27:"Indices & std form",
-  28:"Probability",
-  29:"Non-calc exam",30:"Non-calc exam",
-};
-const PT2A = {
-  1:"Symbols & equations",2:"Symbols & eqns / Index laws",3:"Index laws",
-  4:"Like/unlike terms",
-  5:"Simplify like/unlike terms",6:"Simplify like/unlike terms",
-  7:"Simplify brackets",8:"HCF & factorisation",
-  9:"Quadratic factorisation",10:"Quadratic factorisation",
-  11:"Algebraic operators",
-  12:"Transposition intro",13:"Transposition intro",
-  14:"Change of subject",15:"Change of subject",16:"Change of subject",17:"Change of subject",
-  18:"Substitution",19:"Substitution",
-  20:"Linear equations",21:"Linear equations",
-  22:"Quadratic (factor)",23:"Quadratic (factor)",
-  24:"Quadratic formula",25:"Quadratic formula",
-  26:"Simultaneous eqns",27:"Simultaneous eqns",
-  28:"Index/log conversion",29:"Index/log conversion",
-  30:"Laws of logarithms",31:"Laws of logarithms",
-  32:"Indicial equations",33:"Indicial equations",
-  34:"Plotting graphs",35:"Plotting graphs",
-  36:"Straight-line graphs",37:"Straight-line graphs",
-  38:"Simultaneous (graph)",39:"Simultaneous (graph)",40:"Simultaneous (graph)",
-  41:"EAL Exam 003A",42:"EAL Exam 003A",43:"EAL Exam 003A",
-};
-const PT2B = {
-  1:"Triangle properties",2:"Pythagoras theorem",3:"Pythagoras (calc)",
-  4:"Trig ratios",5:"Trig ratios",
-  6:"Trig functions",7:"Trig functions",
-  8:"Inverse trig",9:"Inverse trig",
-  10:"Trig identities",
-  11:"Sine/cos graphs (CAST)",12:"Sine/cos graphs (CAST)",
-  13:"Sine & cosine rules",14:"Sine & cosine rules",
-  15:"Radians",
-  16:"Circle properties",17:"Unit conversions",
-  18:"Perimeter/area/vol",19:"Perimeter/area/vol",
-  20:"Compound shapes",21:"2D to 3D prism",
-  22:"Surface area & vol",23:"Surface area & vol",
-  24:"EAL Exam 003B",25:"EAL Exam 003B",26:"EAL Exam 003B",
-};
-const PT2C = {
-  1:"Differentiation",2:"Differentiation",3:"Differentiation",4:"Differentiation",5:"Differentiation",
-  6:"2nd derivatives",7:"2nd derivatives",
-  8:"Displacement/vel/acc",9:"Displacement/vel/acc",
-  10:"Differentiation notation",11:"Differentiation notation",
-  12:"Integration intro",
-  13:"Standard integrals",14:"Standard integrals",15:"Standard integrals",
-  16:"Standard integrals",17:"Standard integrals",18:"Standard integrals",
-  19:"Definite integrals",20:"Definite integrals",
-  21:"Integration problems",22:"Integration problems",
-  23:"Data types",
-  24:"Statistical diagrams",25:"Statistical diagrams",
-  26:"Mean/median/mode",27:"Grouped mean",
-  28:"Variance & std dev",29:"Variance & std dev",
-  30:"Population vs sample",
-  31:"EAL Exam 003C",32:"EAL Exam 003C",33:"EAL Exam 003C",
-};
-
-const KLP_MAPS = {pt1:PT1, pt2a:PT2A, pt2b:PT2B, pt2c:PT2C};
-
-function klpLabel(section, pEnd, single) {
-  const map = KLP_MAPS[section];
-  if (!map) return 'P'+pEnd;
-  if (single) return map[pEnd] || 'P'+pEnd;
-  const a = map[pEnd-1] || 'P'+(pEnd-1);
-  const b = map[pEnd]   || 'P'+pEnd;
-  return a === b ? a : a+' / '+b;
-}
-
-// ── COLOURS & LABELS ──────────────────────────────────────────────────────
-const SEC_COLORS = {
-  pt1:  {bg:"#1a6b4a", light:"#d4f0e4"},
-  pt2a: {bg:"#1a5276", light:"#d4e6f1"},
-  pt2b: {bg:"#6c3483", light:"#e8d5f5"},
-  pt2c: {bg:"#7d3c0a", light:"#fde8d0"},
-};
-const SEC_LABELS = {
-  pt1:"Pt1 – Arithmetic", pt2a:"Pt2a – Algebra",
-  pt2b:"Pt2b – Trig & Geometry", pt2c:"Pt2c – Calculus & Stats"
-};
-
-// ── SLOTS ─────────────────────────────────────────────────────────────────
-const SLOTS = [
-  {id:"am1",  label:"AM 1",  time:"08:30–10:00"},
-  {id:"am2",  label:"AM 2",  time:"10:30–12:00"},
-  {id:"lunch",label:"Lunch", time:"13:00–13:30"},
-  {id:"pm1",  label:"PM 1",  time:"13:30–15:00"},
-  {id:"pm2",  label:"PM 2",  time:"15:30–17:00"},
-];
-const DAYS = ["Mon","Tue","Wed","Thu","Fri"];
-
-// ── TIMETABLE DATA ────────────────────────────────────────────────────────
-const RAW = [
-  // Week 08 Jun
-  {date:"2026-06-08",slot:"am1",label:"AEAF Apprenticeship Brief",isMaths:false},
-  {date:"2026-06-08",slot:"am2",label:"AEAF Apprenticeship Brief",isMaths:false},
-  {date:"2026-06-08",slot:"pm1",label:"AEAF Apprenticeship Brief",isMaths:false},
-  {date:"2026-06-08",slot:"pm2",label:"AEAF Apprenticeship Brief",isMaths:false},
-  {date:"2026-06-09",slot:"am1",label:"Intro to APO",isMaths:false},
-  {date:"2026-06-09",slot:"am2",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:2},
-  {date:"2026-06-09",slot:"pm1",label:"Eng Drawing ED1",isMaths:false},
-  {date:"2026-06-09",slot:"pm2",label:"Eng Drawing ED1",isMaths:false},
-  {date:"2026-06-10",slot:"am1",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:4},
-  {date:"2026-06-10",slot:"am2",label:"P Ed",isMaths:false},
-  {date:"2026-06-10",slot:"pm1",label:"Eng Drawing ED2",isMaths:false},
-  {date:"2026-06-10",slot:"pm2",label:"Eng Drawing ED2",isMaths:false},
-  {date:"2026-06-11",slot:"am1",label:"Air Day",isMaths:false},
-  {date:"2026-06-11",slot:"am2",label:"Air Day",isMaths:false},
-  {date:"2026-06-11",slot:"pm1",label:"Air Day",isMaths:false},
-  {date:"2026-06-11",slot:"pm2",label:"Air Day",isMaths:false},
-  {date:"2026-06-12",slot:"am1",label:"Air Day",isMaths:false},
-  {date:"2026-06-12",slot:"am2",label:"Air Day",isMaths:false},
-  {date:"2026-06-12",slot:"pm1",label:"Air Day",isMaths:false},
-  {date:"2026-06-12",slot:"pm2",label:"Air Day",isMaths:false},
-  // Week 15 Jun
-  {date:"2026-06-15",slot:"am1",label:"Air Day",isMaths:false},
-  {date:"2026-06-15",slot:"am2",label:"Air Day",isMaths:false},
-  {date:"2026-06-15",slot:"pm1",label:"Air Day",isMaths:false},
-  {date:"2026-06-15",slot:"pm2",label:"Air Day",isMaths:false},
-  {date:"2026-06-16",slot:"am1",label:"Beliefs & Values 1",isMaths:false},
-  {date:"2026-06-16",slot:"am2",label:"Eng Drawing ED2",isMaths:false},
-  {date:"2026-06-16",slot:"pm1",label:"Eng Drawing ED2",isMaths:false},
-  {date:"2026-06-16",slot:"pm2",label:"Eng Drawing ED2",isMaths:false},
-  {date:"2026-06-17",slot:"am1",label:"Eng Drawing ED2",isMaths:false},
-  {date:"2026-06-17",slot:"am2",label:"Eng Drawing ED2",isMaths:false},
-  {date:"2026-06-17",slot:"pm1",label:"P Ed Cancelled",isMaths:false},
-  {date:"2026-06-17",slot:"pm2",label:"Eng Drawing ED2 + Courageous Conv.",isMaths:false},
-  {date:"2026-06-18",slot:"am1",label:"ED3 Exam Eng Drawing",isMaths:false},
-  {date:"2026-06-18",slot:"am2",label:"ED3 Exam Eng Drawing",isMaths:false},
-  {date:"2026-06-18",slot:"pm1",label:"ED3 Exam Eng Drawing",isMaths:false},
-  {date:"2026-06-18",slot:"pm2",label:"ED3 Exam Eng Drawing",isMaths:false},
-  {date:"2026-06-19",slot:"am1",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:6},
-  {date:"2026-06-19",slot:"am2",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:8},
-  {date:"2026-06-19",slot:"pm1",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:10},
-  {date:"2026-06-19",slot:"pm2",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:12},
-  // Week 22 Jun
-  {date:"2026-06-22",slot:"am1",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:14},
-  {date:"2026-06-22",slot:"am2",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:16},
-  {date:"2026-06-22",slot:"pm1",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:18},
-  {date:"2026-06-22",slot:"pm2",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:20},
-  {date:"2026-06-23",slot:"am1",label:"CAD 1,2,3 theory",isMaths:false},
-  {date:"2026-06-23",slot:"am2",label:"CAD 1,2,3 theory",isMaths:false},
-  {date:"2026-06-23",slot:"pm1",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:22},
-  {date:"2026-06-23",slot:"pm2",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:24},
-  {date:"2026-06-24",slot:"am1",label:"CAD4 practical",isMaths:false},
-  {date:"2026-06-24",slot:"am2",label:"P Ed",isMaths:false},
-  {date:"2026-06-24",slot:"pm1",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:26},
-  {date:"2026-06-24",slot:"pm2",label:"Maths pt1",isMaths:true,section:"pt1",pEnd:28},
-  {date:"2026-06-25",slot:"am1",label:"CAD4/5 practical",isMaths:false},
-  {date:"2026-06-25",slot:"am2",label:"CAD5/6 theory",isMaths:false},
-  {date:"2026-06-25",slot:"lunch",label:"PowerBI Eng Drawing & CAD",isMaths:false},
-  {date:"2026-06-25",slot:"pm1",label:"Maths pt1 – EXAM",isMaths:true,section:"pt1",pEnd:30,isExam:true},
-  {date:"2026-06-25",slot:"pm2",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:2},
-  {date:"2026-06-26",slot:"am1",label:"CAD6 practical / CAD7 Exam",isMaths:false},
-  {date:"2026-06-26",slot:"am2",label:"CAD7 EW025 Exam",isMaths:false},
-  {date:"2026-06-26",slot:"pm1",label:"CAD7 EW025 Exam",isMaths:false},
-  {date:"2026-06-26",slot:"pm2",label:"P Ed",isMaths:false},
-  // Week 29 Jun
-  {date:"2026-06-29",slot:"am1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:4},
-  {date:"2026-06-29",slot:"am2",label:"P Ed",isMaths:false},
-  {date:"2026-06-29",slot:"lunch",label:"F2F Eng Drawing & CAD",isMaths:false},
-  {date:"2026-06-29",slot:"pm1",label:"THS1 Tech HS theory",isMaths:false},
-  {date:"2026-06-29",slot:"pm2",label:"THS1 Tech HS practical",isMaths:false},
-  {date:"2026-06-30",slot:"am1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:6},
-  {date:"2026-06-30",slot:"am2",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:8},
-  {date:"2026-06-30",slot:"pm1",label:"THS2 Tech HS theory",isMaths:false},
-  {date:"2026-06-30",slot:"pm2",label:"THS2 Tech HS theory/practical",isMaths:false},
-  {date:"2026-07-01",slot:"am1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:10},
-  {date:"2026-07-01",slot:"am2",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:12},
-  {date:"2026-07-01",slot:"pm1",label:"THS2 Tech HS practical",isMaths:false},
-  {date:"2026-07-01",slot:"pm2",label:"THS2 Tech HS practical",isMaths:false},
-  {date:"2026-07-02",slot:"am1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:14},
-  {date:"2026-07-02",slot:"am2",label:"Beliefs & Values 2",isMaths:false},
-  {date:"2026-07-02",slot:"pm1",label:"THS3 Tech HS theory",isMaths:false},
-  {date:"2026-07-02",slot:"pm2",label:"THS3 Tech HS practical",isMaths:false},
-  {date:"2026-07-03",slot:"am1",label:"THS4 Tech HS theory",isMaths:false},
-  {date:"2026-07-03",slot:"am2",label:"THS4 Tech HS practical",isMaths:false},
-  {date:"2026-07-03",slot:"pm1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:16},
-  {date:"2026-07-03",slot:"pm2",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:18},
-  // Week 06 Jul
-  {date:"2026-07-06",slot:"am1",label:"THS4 Tech HS practical",isMaths:false},
-  {date:"2026-07-06",slot:"am2",label:"THS4 Tech HS practical",isMaths:false},
-  {date:"2026-07-06",slot:"pm1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:20},
-  {date:"2026-07-06",slot:"pm2",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:22},
-  {date:"2026-07-07",slot:"am1",label:"Courageous Conv. P3 + THS4",isMaths:false},
-  {date:"2026-07-07",slot:"am2",label:"THS5 Tech HS theory",isMaths:false},
-  {date:"2026-07-07",slot:"lunch",label:"PowerBI THS 2",isMaths:false},
-  {date:"2026-07-07",slot:"pm1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:24},
-  {date:"2026-07-07",slot:"pm2",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:26},
-  {date:"2026-07-08",slot:"am1",label:"P Ed",isMaths:false},
-  {date:"2026-07-08",slot:"am2",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-08",slot:"pm1",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-08",slot:"pm2",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-09",slot:"am1",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-09",slot:"am2",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-09",slot:"pm1",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-09",slot:"pm2",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-10",slot:"am1",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-10",slot:"am2",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-10",slot:"pm1",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-10",slot:"pm2",label:"THS6 ES201 Exam",isMaths:false},
-  // Week 13 Jul
-  {date:"2026-07-13",slot:"am1",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-13",slot:"am2",label:"THS6 ES201 Exam",isMaths:false},
-  {date:"2026-07-13",slot:"lunch",label:"Log into MODnet",isMaths:false},
-  {date:"2026-07-13",slot:"pm1",label:"ES1/2 Elec Sci theory",isMaths:false},
-  {date:"2026-07-13",slot:"pm2",label:"ES2 Elec Sci theory",isMaths:false},
-  {date:"2026-07-14",slot:"am1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:28},
-  {date:"2026-07-14",slot:"am2",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:30},
-  {date:"2026-07-14",slot:"lunch",label:"F2F THS",isMaths:false},
-  {date:"2026-07-14",slot:"pm1",label:"ES3 Elec Sci theory",isMaths:false},
-  {date:"2026-07-14",slot:"pm2",label:"ES4 Elec Sci theory",isMaths:false},
-  {date:"2026-07-15",slot:"am1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:32},
-  {date:"2026-07-15",slot:"am2",label:"Beliefs & Values 3",isMaths:false},
-  {date:"2026-07-15",slot:"pm1",label:"ES4 Elec Sci theory",isMaths:false},
-  {date:"2026-07-15",slot:"pm2",label:"ES4 Elec Sci theory",isMaths:false},
-  {date:"2026-07-16",slot:"am1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:34},
-  {date:"2026-07-16",slot:"am2",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:36},
-  {date:"2026-07-16",slot:"pm1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:38},
-  {date:"2026-07-16",slot:"pm2",label:"P Ed",isMaths:false},
-  {date:"2026-07-17",slot:"am1",label:"Maths pt2a",isMaths:true,section:"pt2a",pEnd:40},
-  {date:"2026-07-17",slot:"am2",label:"P Ed",isMaths:false},
-  {date:"2026-07-17",slot:"pm1",label:"TDC Admin",isMaths:false},
-  {date:"2026-07-17",slot:"pm2",label:"Maths pt2a – EXAM 003A",isMaths:true,section:"pt2a",pEnd:41,isExam:true},
-  // Week 20 Jul
-  {date:"2026-07-20",slot:"am1",label:"ES4 Elec Sci theory",isMaths:false},
-  {date:"2026-07-20",slot:"am2",label:"ES5 Elec Sci theory",isMaths:false},
-  {date:"2026-07-20",slot:"pm1",label:"ES5 Elec Sci theory",isMaths:false},
-  {date:"2026-07-20",slot:"pm2",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:2},
-  {date:"2026-07-21",slot:"am1",label:"ES5 Elec Sci theory",isMaths:false},
-  {date:"2026-07-21",slot:"am2",label:"ES5 Elec Sci theory",isMaths:false},
-  {date:"2026-07-21",slot:"pm1",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:4},
-  {date:"2026-07-21",slot:"pm2",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:6},
-  {date:"2026-07-22",slot:"am1",label:"ES5 Elec Sci theory",isMaths:false},
-  {date:"2026-07-22",slot:"am2",label:"P Ed",isMaths:false},
-  {date:"2026-07-22",slot:"pm1",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:8},
-  {date:"2026-07-22",slot:"pm2",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:10},
-  {date:"2026-07-23",slot:"am1",label:"ES5 Elec Sci theory",isMaths:false},
-  {date:"2026-07-23",slot:"am2",label:"ES5 Elec Sci theory",isMaths:false},
-  {date:"2026-07-23",slot:"pm1",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:12},
-  {date:"2026-07-23",slot:"pm2",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:14},
-  {date:"2026-07-24",slot:"am1",label:"ES5 Elec Sci theory",isMaths:false},
-  {date:"2026-07-24",slot:"am2",label:"ES5 Elec Sci theory/practical",isMaths:false},
-  {date:"2026-07-24",slot:"pm1",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:16},
-  {date:"2026-07-24",slot:"pm2",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:18},
-  // Week 27 Jul
-  {date:"2026-07-27",slot:"am1",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:20},
-  {date:"2026-07-27",slot:"am2",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:22},
-  {date:"2026-07-27",slot:"pm1",label:"P Ed",isMaths:false},
-  {date:"2026-07-27",slot:"pm2",label:"ES5 Elec Sci practical",isMaths:false},
-  {date:"2026-07-28",slot:"am1",label:"Maths pt2b",isMaths:true,section:"pt2b",pEnd:23,single:true},
-  {date:"2026-07-28",slot:"am2",label:"Maths pt2b – EXAM 003B",isMaths:true,section:"pt2b",pEnd:24,isExam:true},
-  {date:"2026-07-28",slot:"pm1",label:"ES5 Elec Sci practical",isMaths:false},
-  {date:"2026-07-28",slot:"pm2",label:"ES5 Elec Sci practical",isMaths:false},
-  {date:"2026-07-29",slot:"am1",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:2},
-  {date:"2026-07-29",slot:"am2",label:"P Ed – Fit for life",isMaths:false},
-  {date:"2026-07-29",slot:"pm1",label:"ES5 Elec Sci practical",isMaths:false},
-  {date:"2026-07-29",slot:"pm2",label:"ES6 Elec Sci theory",isMaths:false},
-  {date:"2026-07-30",slot:"am1",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:4},
-  {date:"2026-07-30",slot:"am2",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:6},
-  {date:"2026-07-30",slot:"pm1",label:"ES6 Elec Sci theory",isMaths:false},
-  {date:"2026-07-30",slot:"pm2",label:"ES6 Elec Sci theory",isMaths:false},
-  {date:"2026-07-31",slot:"am1",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:8},
-  {date:"2026-07-31",slot:"am2",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:10},
-  {date:"2026-07-31",slot:"pm1",label:"ES6 Elec Sci practical",isMaths:false},
-  {date:"2026-07-31",slot:"pm2",label:"ES6 Elec Sci practical",isMaths:false},
-  // Week 03 Aug
-  {date:"2026-08-03",slot:"am1",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:12},
-  {date:"2026-08-03",slot:"am2",label:"P Ed",isMaths:false},
-  {date:"2026-08-03",slot:"pm1",label:"ES7/8 Elec Sci theory",isMaths:false},
-  {date:"2026-08-03",slot:"pm2",label:"ES8 Elec Sci theory",isMaths:false},
-  {date:"2026-08-04",slot:"am1",label:"ES8 Elec Sci theory",isMaths:false},
-  {date:"2026-08-04",slot:"am2",label:"ES9 Elec Sci theory",isMaths:false},
-  {date:"2026-08-04",slot:"pm1",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:14},
-  {date:"2026-08-04",slot:"pm2",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:16},
-  {date:"2026-08-05",slot:"am1",label:"Courageous Conv. P4 + ES9",isMaths:false},
-  {date:"2026-08-05",slot:"am2",label:"ES9 Elec Sci practical",isMaths:false},
-  {date:"2026-08-05",slot:"pm1",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:18},
-  {date:"2026-08-05",slot:"pm2",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:20},
-  {date:"2026-08-06",slot:"am1",label:"TDC Admin + ES10 theory",isMaths:false},
-  {date:"2026-08-06",slot:"am2",label:"ES10 Elec Sci theory",isMaths:false},
-  {date:"2026-08-06",slot:"pm1",label:"P Ed",isMaths:false},
-  {date:"2026-08-06",slot:"pm2",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:22},
-  {date:"2026-08-07",slot:"am1",label:"ES10 Elec Sci theory/practical",isMaths:false},
-  {date:"2026-08-07",slot:"am2",label:"ES10 Elec Sci practical",isMaths:false},
-  {date:"2026-08-07",slot:"lunch",label:"Log into MODnet",isMaths:false},
-  {date:"2026-08-07",slot:"pm1",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:24},
-  {date:"2026-08-07",slot:"pm2",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:26},
-  // Week 10 Aug
-  {date:"2026-08-10",slot:"am1",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:28},
-  {date:"2026-08-10",slot:"am2",label:"Maths pt2c",isMaths:true,section:"pt2c",pEnd:30},
-  {date:"2026-08-10",slot:"pm1",label:"2nd Last P Ed",isMaths:false},
-  {date:"2026-08-10",slot:"pm2",label:"ES11 Elec Sci theory",isMaths:false},
-  {date:"2026-08-11",slot:"am1",label:"TDC Admin",isMaths:false},
-  {date:"2026-08-11",slot:"am2",label:"Maths pt2c – EXAM 003C",isMaths:true,section:"pt2c",pEnd:31,isExam:true},
-  {date:"2026-08-11",slot:"pm1",label:"ES11 Elec Sci theory",isMaths:false},
-  {date:"2026-08-11",slot:"pm2",label:"ES11 Elec Sci theory",isMaths:false},
-  {date:"2026-08-12",slot:"am1",label:"ES11 Elec Sci practical",isMaths:false},
-  {date:"2026-08-12",slot:"am2",label:"ES12 Revision Elec Sci",isMaths:false},
-  {date:"2026-08-12",slot:"pm1",label:"ES12 Revision Elec Sci",isMaths:false},
-  {date:"2026-08-12",slot:"pm2",label:"Beliefs & Values 4",isMaths:false},
-  {date:"2026-08-13",slot:"am1",label:"ES12 EP042 Exam Elec Sci",isMaths:false},
-  {date:"2026-08-13",slot:"am2",label:"ES12 EP042 Exam Elec Sci",isMaths:false},
-  {date:"2026-08-13",slot:"lunch",label:"RT Survey",isMaths:false},
-  {date:"2026-08-13",slot:"pm1",label:"Last P Ed",isMaths:false},
-  {date:"2026-08-13",slot:"pm2",label:"TDC Admin/EoC",isMaths:false},
-  {date:"2026-08-14",slot:"am1",label:"APO EoC Feedback",isMaths:false},
-  {date:"2026-08-14",slot:"am2",label:"TDC Admin/EoC",isMaths:false},
-  {date:"2026-08-14",slot:"lunch",label:"F2F Maths & Elec Science",isMaths:false},
-  {date:"2026-08-14",slot:"pm1",label:"MAD Return",isMaths:false},
-];
-
-// ── STATE ──────────────────────────────────────────────────────────────────
-let data = {};
-RAW.forEach(e => { data[e.date+'_'+e.slot] = Object.assign({},e); });
-
-let weekIdx = 0;
-let dragKey = null;
-
-// ── WEEKS ─────────────────────────────────────────────────────────────────
-function getWeeks() {
-  const weeks = [];
-  const start = new Date('2026-06-08T12:00:00');
-  const end   = new Date('2026-08-14T12:00:00');
-  let cur = new Date(start);
-  while (cur <= end) {
-    const days = [];
-    for (let i=0;i<5;i++) {
-      const d = new Date(cur); d.setDate(d.getDate()+i);
-      days.push(d.toISOString().split('T')[0]);
-    }
-    weeks.push({mon:new Date(cur), days});
-    cur.setDate(cur.getDate()+7);
-  }
-  return weeks;
-}
-const WEEKS = getWeeks();
-
-function fmtDate(s) {
-  const d = new Date(s+'T12:00:00');
-  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-}
-
-// ── RENDER ────────────────────────────────────────────────────────────────
-// ── PERIOD → KLP REF MAP ─────────────────────────────────────────────────────
-const PERIOD_KLP_MAP = {
-  pt1: {
-    1:'1.2.1.1.1',2:'1.2.1.1.4',3:'1.2.1.1.4',4:'1.2.1.1.5',
-    5:'1.2.1.1.6',6:'1.2.1.1.7',7:'1.2.1.1.8',8:'1.2.1.1.8',
-    9:'1.2.1.1.9',10:'1.2.1.1.11',11:'1.2.1.1.11',12:'1.2.1.1.11',
-    13:'1.2.1.1.12',14:'1.2.1.1.12',15:'1.2.1.1.13',
-    16:'1.2.1.1.14',17:'1.2.1.1.14',18:'1.2.1.1.15',19:'1.2.1.1.15',
-    20:'1.2.1.1.16',21:'1.2.1.1.16',22:'1.2.1.1.16',23:'1.2.1.1.16',24:'1.2.1.1.16',
-    25:'1.2.1.1.17',26:'1.2.1.1.18',27:'1.2.1.1.18',
-    28:'1.2.1.2.1',29:'1.2.1.1.13',30:'1.2.1.1.13',
-  },
-  pt2a: {
-    1:'1.2.2.1.1',2:'1.2.2.1.2',3:'1.2.2.1.2',4:'1.2.2.1.3',
-    5:'1.2.2.1.4',6:'1.2.2.1.4',7:'1.2.2.1.5',8:'1.2.2.1.6',
-    9:'1.2.2.1.7',10:'1.2.2.1.7',11:'1.2.2.1.8',
-    12:'1.2.2.1.9',13:'1.2.2.1.9',
-    14:'1.2.2.1.10',15:'1.2.2.1.10',16:'1.2.2.1.10',17:'1.2.2.1.10',
-    18:'1.2.2.2.1',19:'1.2.2.2.1',
-    20:'1.2.2.2.2',21:'1.2.2.2.2',
-    22:'1.2.2.2.3',23:'1.2.2.2.3',
-    24:'1.2.2.2.4',25:'1.2.2.2.4',
-    26:'1.2.2.2.5',27:'1.2.2.2.5',
-    28:'1.2.2.3.1',29:'1.2.2.3.1',
-    30:'1.2.2.3.2',31:'1.2.2.3.2',
-    32:'1.2.2.3.3',33:'1.2.2.3.3',
-    34:'1.2.2.4.1',35:'1.2.2.4.1',
-    36:'1.2.2.4.2',37:'1.2.2.4.2',
-    38:'1.2.2.4.3',39:'1.2.2.4.3',40:'1.2.2.4.3',
-    41:'1.2.2.5.1',42:'1.2.2.5.1',43:'1.2.2.5.1',
-  },
-  pt2b: {
-    1:'1.2.2.6.1',2:'1.2.2.6.2',3:'1.2.2.6.3',
-    4:'1.2.2.6.4',5:'1.2.2.6.4',
-    6:'1.2.2.6.5',7:'1.2.2.6.5',
-    8:'1.2.2.6.6',9:'1.2.2.6.6',
-    10:'1.2.2.6.7',
-    11:'1.2.2.6.8',12:'1.2.2.6.8',
-    13:'1.2.2.6.9',14:'1.2.2.6.9',
-    15:'1.2.2.6.10',
-    16:'1.2.2.7.1',17:'1.2.2.7.2',
-    18:'1.2.2.7.3',19:'1.2.2.7.3',
-    20:'1.2.2.7.4',21:'1.2.2.7.5',
-    22:'1.2.2.7.6',23:'1.2.2.7.6',
-    24:'1.2.2.8.1',25:'1.2.2.8.1',26:'1.2.2.8.1',
-  },
-  pt2c: {
-    1:'1.2.2.9.1',2:'1.2.2.9.1',3:'1.2.2.9.1',4:'1.2.2.9.1',5:'1.2.2.9.1',
-    6:'1.2.2.9.2',7:'1.2.2.9.2',
-    8:'1.2.2.9.3',9:'1.2.2.9.3',
-    10:'1.2.2.9.4',11:'1.2.2.9.4',
-    12:'1.2.2.10.1',
-    13:'1.2.2.10.5',14:'1.2.2.10.5',15:'1.2.2.10.5',
-    16:'1.2.2.10.5',17:'1.2.2.10.5',18:'1.2.2.10.5',
-    19:'1.2.2.10.6',20:'1.2.2.10.6',
-    21:'1.2.2.10.7',22:'1.2.2.10.7',
-    23:'1.2.2.11.1',
-    24:'1.2.2.11.3',25:'1.2.2.11.3',
-    26:'1.2.2.12.1',
-    27:'1.2.2.12.3',
-    28:'1.2.2.12.4',29:'1.2.2.12.4',
-    30:'1.2.2.12.5',
-    31:'1.2.2.13.1',32:'1.2.2.13.1',33:'1.2.2.13.1',
-  },
-};
-
-const KLP_REF_DESC = {
-  '1.2.1.1.1':'Diagnostic quiz / Decimal system / Estimation',
-  '1.2.1.1.4':'Standard operators on arithmetic',
-  '1.2.1.1.5':'Directed numbers',
-  '1.2.1.1.6':'Fractions',
-  '1.2.1.1.7':'Operators on fractions',
-  '1.2.1.1.8':'Operators on decimals',
-  '1.2.1.1.9':'Rounding / decimal types',
-  '1.2.1.1.11':'FDP conversion',
-  '1.2.1.1.12':'Percentage values',
-  '1.2.1.1.13':'Arithmetic ratios / Non-calc exam',
-  '1.2.1.1.14':'Proportionality',
-  '1.2.1.1.15':'HCF & LCM',
-  '1.2.1.1.16':'BIDMAS',
-  '1.2.1.1.17':'SI units',
-  '1.2.1.1.18':'Indices & standard form',
-  '1.2.1.2.1':'Probability',
-  '1.2.2.1.1':'Symbols & equations',
-  '1.2.2.1.2':'Index laws',
-  '1.2.2.1.3':'Like/unlike terms',
-  '1.2.2.1.4':'Simplify like/unlike terms',
-  '1.2.2.1.5':'Simplify brackets',
-  '1.2.2.1.6':'HCF & factorisation',
-  '1.2.2.1.7':'Quadratic factorisation',
-  '1.2.2.1.8':'Algebraic operators',
-  '1.2.2.1.9':'Transposition intro',
-  '1.2.2.1.10':'Change of subject',
-  '1.2.2.2.1':'Substitution',
-  '1.2.2.2.2':'Linear equations',
-  '1.2.2.2.3':'Quadratic (factor)',
-  '1.2.2.2.4':'Quadratic formula',
-  '1.2.2.2.5':'Simultaneous equations',
-  '1.2.2.3.1':'Index/log conversion',
-  '1.2.2.3.2':'Laws of logarithms',
-  '1.2.2.3.3':'Indicial equations',
-  '1.2.2.4.1':'Plotting graphs',
-  '1.2.2.4.2':'Straight-line graphs',
-  '1.2.2.4.3':'Simultaneous (graphical)',
-  '1.2.2.5.1':'EAL Exam 003A',
-  '1.2.2.6.1':'Triangle properties',
-  '1.2.2.6.2':'Pythagoras theorem',
-  '1.2.2.6.3':'Pythagoras (calculation)',
-  '1.2.2.6.4':'Trig ratios',
-  '1.2.2.6.5':'Trig functions',
-  '1.2.2.6.6':'Inverse trig',
-  '1.2.2.6.7':'Trig identities',
-  '1.2.2.6.8':'Sine/cos graphs (CAST)',
-  '1.2.2.6.9':'Sine & cosine rules',
-  '1.2.2.6.10':'Radians',
-  '1.2.2.7.1':'Circle properties',
-  '1.2.2.7.2':'Unit conversions',
-  '1.2.2.7.3':'Perimeter/area/volume',
-  '1.2.2.7.4':'Compound shapes',
-  '1.2.2.7.5':'2D to 3D prism',
-  '1.2.2.7.6':'Surface area & volume',
-  '1.2.2.8.1':'EAL Exam 003B',
-  '1.2.2.9.1':'Differentiation',
-  '1.2.2.9.2':'2nd derivatives',
-  '1.2.2.9.3':'Displacement/velocity/acceleration',
-  '1.2.2.9.4':'Differentiation notation',
-  '1.2.2.10.1':'Integration intro',
-  '1.2.2.10.5':'Standard integrals',
-  '1.2.2.10.6':'Definite integrals',
-  '1.2.2.10.7':'Integration problems',
-  '1.2.2.11.1':'Data types',
-  '1.2.2.11.3':'Statistical diagrams',
-  '1.2.2.12.1':'Mean/median/mode',
-  '1.2.2.12.3':'Grouped mean',
-  '1.2.2.12.4':'Variance & std dev',
-  '1.2.2.12.5':'Population vs sample',
-  '1.2.2.13.1':'EAL Exam 003C',
-};
-
-const SECTION_BOOK_FILE = {
-  pt1:'books/pt1.html', pt2a:'books/book1.html',
-  pt2b:'books/book2.html', pt2c:'books/book3.html',
-};
-
-function render() {
-  const week = WEEKS[weekIdx];
-
-  document.getElementById('weekLabel').textContent = 'w/c '+week.mon.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  document.getElementById('weekRange').textContent = fmtDate(week.days[0])+' – '+fmtDate(week.days[4]);
-  document.getElementById('btnPrev').disabled = weekIdx===0;
-  document.getElementById('btnNext').disabled = weekIdx===WEEKS.length-1;
-
-  const showSlots = SLOTS.filter(s => {
-    if (s.id==='lunch') return week.days.some(d => data[d+'_lunch']);
-    return true;
-  });
-
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  grid.style.gridTemplateColumns = '80px repeat(5,1fr)';
-
-  const cornerEl = document.createElement('div');
-  cornerEl.className = 'grid-header';
-  cornerEl.textContent = 'Slot';
-  grid.appendChild(cornerEl);
-  DAYS.forEach((d,i) => {
-    const el = document.createElement('div');
-    el.className = 'grid-header day-header';
-    el.innerHTML = d+'<div class="date-sub">'+fmtDate(week.days[i])+'</div>';
-    grid.appendChild(el);
-  });
-
-  showSlots.forEach(slot => {
-    const lbl = document.createElement('div');
-    lbl.className = 'slot-label';
-    lbl.innerHTML = '<span class="slot-name">'+slot.label+'</span><span class="slot-time">'+slot.time+'</span>';
-    grid.appendChild(lbl);
-
-    week.days.forEach(date => {
-      const key = date+'_'+slot.id;
-      const entry = data[key];
-      const cell = document.createElement('div');
-
-      if (!entry) {
-        cell.className = 'cell cell-empty';
-        cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
-        cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
-        cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); handleDrop(key); });
-      } else if (entry.isMaths) {
-        const sc = SEC_COLORS[entry.section] || SEC_COLORS.pt1;
-        const lbl2 = entry.isExam ? entry.label : klpLabel(entry.section, entry.pEnd, entry.single);
-        const pLbl = entry.single ? 'P'+entry.pEnd : 'P'+(entry.pEnd-1)+'–P'+entry.pEnd;
-        cell.className = 'cell cell-maths';
-        if (entry.isExam) {
-          cell.style.background = '#2a0808';
-          cell.style.borderLeft = '4px solid #cc2222';
-          cell.innerHTML =
-            '<div class="cell-tag" style="background:#8b1a1a">⚠ EXAM</div>'+
-            '<div class="cell-main-exam">'+lbl2+'</div>'+
-            '<div class="cell-period-exam">'+pLbl+'</div>';
-        } else {
-          cell.style.background = sc.light;
-          cell.style.borderLeft = '4px solid '+sc.bg;
-          cell.innerHTML =
-            '<div class="cell-tag" style="background:'+sc.bg+'">'+SEC_LABELS[entry.section]+'</div>'+
-            '<div class="cell-main">'+lbl2+'</div>'+
-            '<div class="cell-period">'+pLbl+'</div>';
-        }
-        cell.draggable = true;
-        // Track whether we moved so click doesn't fire after drag
-        let didDrag = false;
-        cell.addEventListener('dragstart', e => { dragKey = key; didDrag = true; e.dataTransfer.effectAllowed='move'; });
-        cell.addEventListener('dragend', () => { setTimeout(() => { didDrag = false; }, 50); });
-        cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
-        cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
-        cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); handleDrop(key); });
-        cell.addEventListener('click', () => { if (!didDrag) openPanel(Object.assign({},entry)); });
-      } else {
-        const isPEd = /p\s*ed/i.test(entry.label);
-        const isOtherExam = /exam/i.test(entry.label);
-        if (isPEd) {
-          cell.className = 'cell cell-ped';
-          cell.innerHTML = '<div class="cell-ped-label">'+entry.label+'</div>';
-        } else if (isOtherExam) {
-          cell.className = 'cell cell-exam-other';
-          cell.innerHTML = '<div class="cell-exam-other-label">'+entry.label+'</div>';
-        } else {
-          cell.className = 'cell cell-other';
-          cell.innerHTML = '<div class="cell-other-label">'+entry.label+'</div>';
-        }
-        cell.addEventListener('dragover', e => { e.preventDefault(); });
-        cell.addEventListener('drop', () => handleDrop(key));
-      }
-
-      grid.appendChild(cell);
-    });
-  });
-}
-
-function handleDrop(targetKey) {
-  if (!dragKey || dragKey === targetKey) { dragKey=null; return; }
-  const src = data[dragKey];
-  const tgt = data[targetKey];
-  if (src) {
-    const [tDate,tSlot] = targetKey.split('_');
-    const [sDate,sSlot] = dragKey.split('_');
-    data[targetKey] = Object.assign({},src,{date:tDate,slot:tSlot});
-    if (tgt) data[dragKey] = Object.assign({},tgt,{date:sDate,slot:sSlot});
-    else delete data[dragKey];
-  }
-  dragKey = null;
-  render();
-}
-
-// ── LEGEND ────────────────────────────────────────────────────────────────
-function buildLegend() {
-  const leg = document.getElementById('legend');
-  Object.entries(SEC_COLORS).forEach(([k,c]) => {
-    const item = document.createElement('div');
-    item.className = 'legend-item';
-    item.innerHTML = '<div class="legend-dot" style="background:'+c.bg+'"></div><span>'+SEC_LABELS[k]+'</span>';
-    leg.appendChild(item);
-  });
-  const examItem = document.createElement('div');
-  examItem.className = 'legend-item';
-  examItem.innerHTML = '<div class="legend-dot" style="background:#8b1a1a"></div><span>Maths exam</span>';
-  leg.appendChild(examItem);
-  const pedItem = document.createElement('div');
-  pedItem.className = 'legend-item';
-  pedItem.innerHTML = '<div class="legend-dot" style="background:#d4870a"></div><span>P Ed</span>';
-  leg.appendChild(pedItem);
-  const other = document.createElement('div');
-  other.className = 'legend-item';
-  other.innerHTML = '<div class="legend-dot" style="background:#1c2030;border:1px solid #3a4258"></div><span>Other subject</span>';
-  leg.appendChild(other);
-  const examOther = document.createElement('div');
-  examOther.className = 'legend-item';
-  examOther.innerHTML = '<div class="legend-dot" style="background:#2a1018;border:1px solid #8b2020"></div><span>Other exam</span>';
-  leg.appendChild(examOther);
-}
-
-document.getElementById('btnPrev').addEventListener('click', () => { weekIdx--; render(); });
-document.getElementById('btnNext').addEventListener('click', () => { weekIdx++; render(); });
-
-buildLegend();
-render();
-
-// ── LESSON PANEL LOGIC ────────────────────────────────────────────────────────
-function klpRefsForEntry(entry) {
-  const map = PERIOD_KLP_MAP[entry.section];
-  if (!map) return [];
-  const refs = [];
-  const add = r => { if (r && !refs.includes(r)) refs.push(r); };
-  if (entry.single) {
-    add(map[entry.pEnd]);
-  } else {
-    add(map[entry.pEnd - 1]);
-    add(map[entry.pEnd]);
-  }
-  return refs;
-}
-
-async function openPanel(entry) {
-  const refs = klpRefsForEntry(entry);
-  const primaryRef = refs[0] || null;
-  const desc = primaryRef ? (KLP_REF_DESC[primaryRef] || entry.label) : entry.label;
-  const pLbl = entry.single ? 'P'+entry.pEnd : 'P'+(entry.pEnd-1)+'\u2013P'+entry.pEnd;
-
-  document.getElementById('panel-klp-ref').textContent = primaryRef || '';
-  document.getElementById('panel-klp-title').textContent = desc;
-  document.getElementById('panel-period').textContent = pLbl;
-
-  // Book iframe
-  const frame = document.getElementById('panel-book-frame');
-  const bookFile = SECTION_BOOK_FILE[entry.section] || '';
-  const sectionFile = primaryRef
-    ? 'books/sections/'+entry.section+'/'+primaryRef+'.html'
-    : null;
-
-  if (sectionFile) {
-    fetch(sectionFile)
-      .then(r => { frame.src = r.ok ? sectionFile : bookFile + (primaryRef ? '#klp-'+primaryRef.replace(/\./g,'-') : ''); })
-      .catch(() => { frame.src = bookFile; });
-  } else {
-    frame.src = bookFile;
-  }
-
-  // Book link
-  const anchor = primaryRef ? '#klp-'+primaryRef.replace(/\./g,'-') : '';
-  const link = document.getElementById('panel-book-link');
-  link.href = bookFile + anchor;
-
-  // Notes
-  const noteKey = 'note_'+entry.section+'_p'+entry.pEnd;
-  _currentNoteKey = noteKey;
-  document.getElementById('panel-notes').value = await loadNote(noteKey);
-  document.getElementById('panel-save-status').textContent = '';
-  document.getElementById('panel-save-btn').onclick = () => saveNote(noteKey);
-
-  // Links — clear and load async
-  document.getElementById('links-list').innerHTML = '<div class="links-empty">Loading…</div>';
-  document.getElementById('resources-list').innerHTML = '';
-  document.getElementById('link-input-label').value = '';
-  document.getElementById('link-input-url').value = '';
-  document.getElementById('links-status').textContent = '';
-  document.getElementById('res-input-label').value = '';
-  document.getElementById('res-input-url').value = '';
-  document.getElementById('res-status').textContent = '';
-  refreshLinksTab(noteKey);
-
-  switchTab('book');
-  document.getElementById('panel-overlay').classList.add('open');
-  document.getElementById('lesson-panel').classList.add('open');
-}
-
-function closePanel() {
-  document.getElementById('panel-overlay').classList.remove('open');
-  document.getElementById('lesson-panel').classList.remove('open');
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-  ['panel-book-frame','panel-notes-tab','panel-links-tab','panel-resources-tab']
-    .forEach(id => document.getElementById(id).classList.remove('active'));
-  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-  const map = {
-    book: 'panel-book-frame',
-    notes: 'panel-notes-tab',
-    links: 'panel-links-tab',
-    resources: 'panel-resources-tab',
-  };
-  if (map[tab]) document.getElementById(map[tab]).classList.add('active');
-}
-
-// ── NOTES STORAGE — Supabase ─────────────────────────────────────────────────
 const _sb = supabase.createClient(
   'https://znaqeoqgpqrsifmbmijf.supabase.co',
   'sb_publishable_L8g1B1mvRFqMSS3zGyukzA_da38oc-4'
 );
 
-const _noteCache = {};
+// ── Load & display plans ──────────────────────────────────────────────────────
+async function loadPlans() {
+  const { data, error } = await _sb.from('plans')
+    .select('slug,profile,course_number,start_date,created_at')
+    .order('start_date', { ascending: false });
 
-async function loadNote(key) {
-  if (_noteCache[key] !== undefined) return _noteCache[key];
-  try {
-    const { data } = await _sb.from('notes').select('content').eq('note_key', key).maybeSingle();
-    const val = (data && data.content) || localStorage.getItem(key) || '';
-    _noteCache[key] = val;
-    return val;
-  } catch {
-    return localStorage.getItem(key) || '';
-  }
-}
-
-async function saveNote(key) {
-  const content = document.getElementById('panel-notes').value;
-  _noteCache[key] = content;
-  localStorage.setItem(key, content);
-  const s = document.getElementById('panel-save-status');
-  s.textContent = 'Saving…';
-  try {
-    const { error } = await _sb.from('notes')
-      .upsert({ note_key: key, content, updated_at: new Date().toISOString() },
-               { onConflict: 'note_key' });
-    s.textContent = error ? 'Local only ⚠' : 'Saved ✓';
-  } catch {
-    s.textContent = 'Local only ⚠';
-  }
-  setTimeout(() => { s.textContent = ''; }, 3000);
-}
-
-// ── LINKS & RESOURCES ────────────────────────────────────────────────────────
-let _currentNoteKey = null;
-const _linksCache = {};
-
-async function loadLinks(key) {
-  if (_linksCache[key]) return _linksCache[key];
-  try {
-    const { data } = await _sb.from('links')
-      .select('*').eq('note_key', key).order('sort_order').order('created_at');
-    _linksCache[key] = data || [];
-    return _linksCache[key];
-  } catch { return []; }
-}
-
-async function addLink(key, label, url, embed) {
-  const maxOrder = (_linksCache[key] || []).reduce((m, l) => Math.max(m, l.sort_order || 0), 0);
-  const { data, error } = await _sb.from('links')
-    .insert({ note_key: key, label, url, embed, sort_order: maxOrder + 1 })
-    .select().single();
-  if (!error && data) {
-    if (!_linksCache[key]) _linksCache[key] = [];
-    _linksCache[key].push(data);
-  }
-  return { error };
-}
-
-async function deleteLink(id, key) {
-  await _sb.from('links').delete().eq('id', id);
-  if (_linksCache[key]) _linksCache[key] = _linksCache[key].filter(l => l.id !== id);
-}
-
-async function toggleEmbed(id, key, newVal) {
-  await _sb.from('links').update({ embed: newVal }).eq('id', id);
-  if (_linksCache[key]) {
-    const item = _linksCache[key].find(l => l.id === id);
-    if (item) item.embed = newVal;
-  }
-}
-
-function youtubeEmbedUrl(url) {
-  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  return m ? `https://www.youtube.com/embed/${m[1]}` : null;
-}
-
-function isImage(url) {
-  return /\.(png|jpe?g|gif|svg|webp)(\?.*)?$/i.test(url);
-}
-
-function isPdf(url) {
-  return /\.pdf(\?.*)?$/i.test(url);
-}
-
-function renderLinksList(links, key) {
-  const list = document.getElementById('links-list');
-  if (!links.length) {
-    list.innerHTML = '<div class="links-empty">No links yet — add one below</div>';
+  const el = document.getElementById('plans-container');
+  if (error || !data || !data.length) {
+    el.innerHTML = '<p class="empty-state">No plans yet — create one below.</p>';
+    el.className = '';
     return;
   }
-  list.innerHTML = links.map(l => `
-    <div class="link-item" data-id="${l.id}">
-      <span class="link-item-label" title="${l.label}">${l.label}</span>
-      <span class="link-item-url" title="${l.url}">${l.url}</span>
-      <a href="${l.url}" target="_blank" class="link-btn">Open</a>
-      <button class="link-btn embed-btn ${l.embed ? 'embed-on' : ''}" title="${l.embed ? 'Remove from Resources' : 'Show in Resources'}">${l.embed ? '📌 Embedded' : '📌 Embed'}</button>
-      <button class="link-btn del del-btn">✕</button>
-    </div>
-  `).join('');
-
-  list.querySelectorAll('.del-btn').forEach((btn, i) => {
-    btn.addEventListener('click', async () => {
-      await deleteLink(links[i].id, key);
-      renderLinksList(_linksCache[key] || [], key);
-      renderResourcesList(_linksCache[key] || []);
-    });
-  });
-  list.querySelectorAll('.embed-btn').forEach((btn, i) => {
-    btn.addEventListener('click', async () => {
-      const newVal = !links[i].embed;
-      await toggleEmbed(links[i].id, key, newVal);
-      renderLinksList(_linksCache[key] || [], key);
-      renderResourcesList(_linksCache[key] || []);
-    });
-  });
-}
-
-function renderResourcesList(links) {
-  const list = document.getElementById('resources-list');
-  const embeds = links.filter(l => l.embed);
-  if (!embeds.length) {
-    list.innerHTML = '<div class="resources-empty">No resources yet — add a link and click 📌 Embed to show it here</div>';
-    return;
-  }
-  list.innerHTML = embeds.map(l => {
-    const ytUrl = youtubeEmbedUrl(l.url);
-    let body = '';
-    if (isImage(l.url)) {
-      body = `<img class="resource-embed-img" src="${l.url}" alt="${l.label}" loading="lazy">`;
-    } else if (ytUrl) {
-      body = `<iframe class="resource-embed" src="${ytUrl}" height="280" allowfullscreen></iframe>`;
-    } else if (isPdf(l.url)) {
-      body = `<iframe class="resource-embed" src="${l.url}" height="400"></iframe>`;
-    } else {
-      body = `<div class="resource-no-embed">⚠ Can't embed this URL directly — <a href="${l.url}" target="_blank">open in new tab</a></div>`;
-    }
-    return `<div class="resource-item">
-      <div class="resource-item-header">
-        <span class="resource-item-label">${l.label}</span>
-        <a href="${l.url}" target="_blank" class="link-btn">Open</a>
-      </div>
-      ${body}
-    </div>`;
+  el.className = 'plans-grid';
+  el.innerHTML = data.map(p => {
+    const d = new Date(p.start_date + 'T12:00:00');
+    const fmt = d.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+    return `<a class="plan-card" href="plan.html?plan=${p.slug}">
+      <div class="plan-card-profile">${p.profile}</div>
+      <div class="plan-card-title">${p.profile} ${p.course_number}</div>
+      <div class="plan-card-date">Starting ${fmt}</div>
+      <div class="plan-card-meta">${p.slug}</div>
+    </a>`;
   }).join('');
 }
 
-async function refreshLinksTab(key) {
-  const links = await loadLinks(key);
-  renderLinksList(links, key);
-  renderResourcesList(links);
+loadPlans();
+
+// ── Negated days ──────────────────────────────────────────────────────────────
+let negatedDays = [];
+
+function renderNegated() {
+  document.getElementById('negated-list').innerHTML = negatedDays
+    .sort()
+    .map(d => {
+      const fmt = new Date(d + 'T12:00:00').toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+      return `<span class="neg-chip">${fmt}<button data-d="${d}">✕</button></span>`;
+    }).join('');
+  document.querySelectorAll('.neg-chip button').forEach(b => {
+    b.addEventListener('click', () => {
+      negatedDays = negatedDays.filter(d => d !== b.dataset.d);
+      renderNegated();
+    });
+  });
 }
 
-</script>
-
-<!-- ── LESSON PANEL ── -->
-<div id="panel-overlay"></div>
-<div id="lesson-panel">
-  <div id="panel-header">
-    <span id="panel-klp-ref"></span>
-    <span id="panel-klp-title"></span>
-    <span id="panel-period"></span>
-    <button id="panel-close" title="Close">&#x2715;</button>
-  </div>
-  <div id="panel-tabs">
-    <div class="panel-tab active" data-tab="book">&#x1F4D6; Book</div>
-    <div class="panel-tab" data-tab="notes">&#x1F4DD; Notes</div>
-    <div class="panel-tab" data-tab="links">&#x1F517; Links</div>
-    <div class="panel-tab" data-tab="resources">&#x1F5BC; Resources</div>
-    <a id="panel-book-link" href="#" target="_blank">&#x2197; Full book</a>
-  </div>
-  <div id="panel-body">
-    <iframe id="panel-book-frame" class="active" sandbox="allow-same-origin allow-scripts"></iframe>
-
-    <div id="panel-notes-tab">
-      <div id="panel-notes-label">Session notes — saved to Supabase (local backup always kept)</div>
-      <textarea id="panel-notes" placeholder="Teaching notes, student feedback, pace adjustments…"></textarea>
-      <div id="panel-notes-actions">
-        <button id="panel-save-btn">Save notes</button>
-        <span id="panel-save-status"></span>
-      </div>
-    </div>
-
-    <div id="panel-links-tab">
-      <div id="links-list"></div>
-      <div id="links-add-form">
-        <input id="link-input-label" type="text" placeholder="Label (e.g. Khan Academy — BIDMAS)">
-        <div id="links-add-row">
-          <input id="link-input-url" type="url" placeholder="https://…" style="flex:1">
-          <button id="links-add-btn">Add link</button>
-        </div>
-        <span id="links-status"></span>
-      </div>
-    </div>
-
-    <div id="panel-resources-tab">
-      <div id="resources-list"></div>
-      <div id="links-add-form" style="margin-top:auto;">
-        <input id="res-input-label" type="text" placeholder="Label (e.g. Worked example — chain rule)">
-        <div id="links-add-row">
-          <input id="res-input-url" type="url" placeholder="https://… (image, YouTube, PDF, or any URL)" style="flex:1">
-          <button id="res-add-btn">Add resource</button>
-        </div>
-        <span id="res-status"></span>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script>
-// Wire up panel controls — must be after panel HTML exists in the DOM
-document.getElementById('panel-close').addEventListener('click', closePanel);
-document.getElementById('panel-overlay').addEventListener('click', closePanel);
-document.querySelectorAll('.panel-tab').forEach(t => {
-  t.addEventListener('click', () => switchTab(t.dataset.tab));
+document.getElementById('btn-add-neg').addEventListener('click', () => {
+  const val = document.getElementById('f-neg-date').value;
+  if (val && !negatedDays.includes(val)) {
+    negatedDays.push(val);
+    renderNegated();
+  }
+  document.getElementById('f-neg-date').value = '';
 });
 
-document.getElementById('links-add-btn').addEventListener('click', async () => {
-  const label = document.getElementById('link-input-label').value.trim();
-  const url   = document.getElementById('link-input-url').value.trim();
-  const status = document.getElementById('links-status');
-  if (!url) { status.textContent = 'Please enter a URL'; return; }
-  const displayLabel = label || url;
-  status.textContent = 'Saving…';
-  const { error } = await addLink(_currentNoteKey, displayLabel, url, false);
-  if (error) { status.textContent = 'Error saving ⚠'; return; }
-  document.getElementById('link-input-label').value = '';
-  document.getElementById('link-input-url').value = '';
-  status.textContent = 'Added ✓';
-  setTimeout(() => { status.textContent = ''; }, 2000);
-  renderLinksList(_linksCache[_currentNoteKey] || [], _currentNoteKey);
-  renderResourcesList(_linksCache[_currentNoteKey] || []);
+// ── Plan generator ────────────────────────────────────────────────────────────
+function generateWorkingDays(startDate, count, negated) {
+  const neg = new Set(negated);
+  const days = [];
+  const cur = new Date(startDate + 'T12:00:00');
+  while (days.length < count) {
+    const dow = cur.getDay(); // 0=Sun,6=Sat
+    const iso = cur.toISOString().split('T')[0];
+    if (dow >= 1 && dow <= 5 && !neg.has(iso)) {
+      days.push(iso);
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+  return days;
+}
+
+function buildTimetableData(template, startDate, negated) {
+  const workingDays = generateWorkingDays(startDate, template.length, negated);
+  const data = {};
+  template.forEach((daySlots, i) => {
+    const date = workingDays[i];
+    daySlots.forEach(slot => {
+      data[date + '_' + slot.slot] = Object.assign({}, slot, { date });
+    });
+  });
+  return data;
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+document.getElementById('btn-new-plan').addEventListener('click', () => {
+  negatedDays = [];
+  renderNegated();
+  document.getElementById('f-course').value = '';
+  document.getElementById('f-start').value = '';
+  document.getElementById('modal-status').textContent = '';
+  document.getElementById('modal-overlay').classList.add('open');
 });
 
-// Also allow Enter in URL field to submit
-document.getElementById('link-input-url').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('links-add-btn').click();
+document.getElementById('btn-cancel').addEventListener('click', () => {
+  document.getElementById('modal-overlay').classList.remove('open');
 });
 
-// Resources tab — add directly with embed=true
-document.getElementById('res-add-btn').addEventListener('click', async () => {
-  const label  = document.getElementById('res-input-label').value.trim();
-  const url    = document.getElementById('res-input-url').value.trim();
-  const status = document.getElementById('res-status');
-  if (!url) { status.textContent = 'Please enter a URL'; return; }
-  const displayLabel = label || url;
-  status.textContent = 'Saving…';
-  const { error } = await addLink(_currentNoteKey, displayLabel, url, true);
-  if (error) { status.textContent = 'Error saving ⚠'; return; }
-  document.getElementById('res-input-label').value = '';
-  document.getElementById('res-input-url').value = '';
-  status.textContent = 'Added ✓';
-  setTimeout(() => { status.textContent = ''; }, 2000);
-  renderLinksList(_linksCache[_currentNoteKey] || [], _currentNoteKey);
-  renderResourcesList(_linksCache[_currentNoteKey] || []);
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').classList.remove('open');
 });
 
-document.getElementById('res-input-url').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('res-add-btn').click();
+document.getElementById('btn-create').addEventListener('click', async () => {
+  const profile    = document.getElementById('f-profile').value;
+  const courseNum  = document.getElementById('f-course').value.trim().toUpperCase();
+  const startDate  = document.getElementById('f-start').value;
+  const status     = document.getElementById('modal-status');
+  const btn        = document.getElementById('btn-create');
+
+  if (!courseNum) { status.textContent = 'Enter a course number'; return; }
+  if (!startDate) { status.textContent = 'Enter a start date'; return; }
+
+  const slug = profile + '-' + courseNum;
+  const template = profile === 'TG5' ? TG5_TEMPLATE : null;
+  if (!template) { status.textContent = 'Profile not yet available'; return; }
+
+  btn.disabled = true;
+  status.textContent = 'Generating…';
+
+  const timetableData = buildTimetableData(template, startDate, negatedDays);
+
+  const { error } = await _sb.from('plans').insert({
+    slug,
+    profile,
+    course_number: courseNum,
+    start_date: startDate,
+    negated_days: negatedDays,
+    timetable_data: timetableData,
+  });
+
+  if (error) {
+    status.textContent = error.code === '23505' ? 'Plan already exists' : 'Error: ' + error.message;
+    btn.disabled = false;
+    return;
+  }
+
+  window.location.href = 'plan.html?plan=' + slug;
 });
 </script>
-
 </body>
 </html>
