@@ -139,6 +139,11 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
     <button id="panel-cut-btn" title="Move to another slot" style="background:none;border:1px solid #3a4258;color:#8a95a8;font-size:0.75rem;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;flex-shrink:0;">✂ Move</button>
     <button id="panel-close" title="Close">&#x2715;</button>
   </div>
+  <div id="panel-override-row" style="display:flex;align-items:center;gap:6px;padding:7px 14px;background:#12151f;border-bottom:1px solid #3a4258;flex-shrink:0;">
+    <input id="panel-override-input" type="text" placeholder="Override label for this slot only… (blank = use default)" style="flex:1;background:#1c2030;border:1px solid #3a4258;border-radius:5px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:5px 10px;">
+    <button id="panel-override-save" style="background:#1a5276;border:none;color:#fff;padding:5px 14px;border-radius:5px;cursor:pointer;font-size:0.8rem;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">Set</button>
+    <button id="panel-override-clear" style="background:none;border:1px solid #3a4258;color:#8a95a8;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:0.8rem;font-family:'DM Sans',sans-serif;white-space:nowrap;">Clear</button>
+  </div>
   <div id="panel-tabs">
     <div class="panel-tab active" data-tab="book">&#x1F4D6; Book</div>
     <div class="panel-tab" data-tab="notes">&#x1F4DD; Notes</div>
@@ -261,7 +266,7 @@ function render(){
         cell.addEventListener('click',()=>{if(cutKey)handleCutPaste(key);});
       } else if(entry.isMaths){
         const sc=SEC_COLORS[entry.section]||SEC_COLORS.pt1;
-        const lbl2=entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single);
+        const lbl2=entry.override||(entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single));
         const pLbl=entry.single?'P'+entry.pEnd:'P'+(entry.pEnd-1)+'–P'+entry.pEnd;
         cell.className='cell cell-maths'+(entry.done?' done':'')+(key===cutKey?' cell-cut':'');
         if(entry.isExam){cell.style.background='#2a0808';cell.style.borderLeft='4px solid #cc2222';cell.innerHTML='<div class="cell-tag" style="background:#8b1a1a">⚠ EXAM</div><div class="cell-main-exam">'+lbl2+'</div><div class="cell-period-exam">'+pLbl+'</div>';}
@@ -387,6 +392,28 @@ async function openPanel(entry){
   doneBtn.textContent=entry.done?'✓ Done ✓':'✓ Done';
   doneBtn.style.color=entry.done?'#7ecfaa':'#8a95a8';
   cutBtn.onclick=()=>{if(entry.key)startCut(entry.key);};
+  // Override label
+  const ovInput=document.getElementById('panel-override-input');
+  const ovSave=document.getElementById('panel-override-save');
+  const ovClear=document.getElementById('panel-override-clear');
+  ovInput.value=entry.override||'';
+  ovInput.placeholder=entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single);
+  ovSave.onclick=()=>{
+    const v=ovInput.value.trim();
+    if(entry.key&&tData[entry.key]){tData[entry.key].override=v||undefined;entry.override=v||undefined;}
+    ovInput.placeholder=v||(entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single));
+    document.getElementById('panel-klp-title').textContent=v||ovInput.placeholder;
+    render(); scheduleSave();
+  };
+  ovClear.onclick=()=>{
+    ovInput.value='';
+    if(entry.key&&tData[entry.key])delete tData[entry.key].override;
+    entry.override=undefined;
+    const def=entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single);
+    ovInput.placeholder=def;
+    document.getElementById('panel-klp-title').textContent=def;
+    render(); scheduleSave();
+  };
   switchTab('book');
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('lesson-panel').classList.add('open');
