@@ -847,6 +847,9 @@ async function openPanel(entry) {
   document.getElementById('link-input-label').value = '';
   document.getElementById('link-input-url').value = '';
   document.getElementById('links-status').textContent = '';
+  document.getElementById('res-input-label').value = '';
+  document.getElementById('res-input-url').value = '';
+  document.getElementById('res-status').textContent = '';
   refreshLinksTab(noteKey);
 
   switchTab('book');
@@ -1074,6 +1077,14 @@ async function refreshLinksTab(key) {
 
     <div id="panel-resources-tab">
       <div id="resources-list"></div>
+      <div id="links-add-form" style="margin-top:auto;">
+        <input id="res-input-label" type="text" placeholder="Label (e.g. Worked example — chain rule)">
+        <div id="links-add-row">
+          <input id="res-input-url" type="url" placeholder="https://… (image, YouTube, PDF, or any URL)" style="flex:1">
+          <button id="res-add-btn">Add resource</button>
+        </div>
+        <span id="res-status"></span>
+      </div>
     </div>
 
   </div>
@@ -1107,6 +1118,28 @@ document.getElementById('links-add-btn').addEventListener('click', async () => {
 // Also allow Enter in URL field to submit
 document.getElementById('link-input-url').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('links-add-btn').click();
+});
+
+// Resources tab — add directly with embed=true
+document.getElementById('res-add-btn').addEventListener('click', async () => {
+  const label  = document.getElementById('res-input-label').value.trim();
+  const url    = document.getElementById('res-input-url').value.trim();
+  const status = document.getElementById('res-status');
+  if (!url) { status.textContent = 'Please enter a URL'; return; }
+  const displayLabel = label || url;
+  status.textContent = 'Saving…';
+  const { error } = await addLink(_currentNoteKey, displayLabel, url, true);
+  if (error) { status.textContent = 'Error saving ⚠'; return; }
+  document.getElementById('res-input-label').value = '';
+  document.getElementById('res-input-url').value = '';
+  status.textContent = 'Added ✓';
+  setTimeout(() => { status.textContent = ''; }, 2000);
+  renderLinksList(_linksCache[_currentNoteKey] || [], _currentNoteKey);
+  renderResourcesList(_linksCache[_currentNoteKey] || []);
+});
+
+document.getElementById('res-input-url').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('res-add-btn').click();
 });
 </script>
 
