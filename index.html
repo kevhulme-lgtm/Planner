@@ -21,6 +21,9 @@ header{margin-bottom:32px;}
 .plan-card-title{font-size:1.05rem;font-weight:700;color:#e8eaf0;margin-bottom:4px;}
 .plan-card-date{font-size:0.78rem;color:#8a95a8;}
 .plan-card-meta{font-size:0.72rem;color:#4a5570;margin-top:8px;font-family:'DM Mono',monospace;}
+.plan-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.btn-delete-plan{background:none;border:1px solid #3a4258;color:#4a5570;font-size:0.72rem;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-delete-plan:hover{border-color:#cc4444;color:#cc4444;}
 
 /* New plan button */
 .btn-new{display:inline-flex;align-items:center;gap:8px;background:#1a6b4a;border:none;color:#fff;
@@ -144,13 +147,30 @@ async function loadPlans() {
   el.innerHTML = data.map(p => {
     const d = new Date(p.start_date + 'T12:00:00');
     const fmt = d.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
-    return `<a class="plan-card" href="plan.html?plan=${p.slug}">
-      <div class="plan-card-profile">${p.profile}</div>
-      <div class="plan-card-title">${p.profile} ${p.course_number}</div>
-      <div class="plan-card-date">Starting ${fmt}</div>
-      <div class="plan-card-meta">${p.slug}</div>
-    </a>`;
+    return `<div class="plan-card-wrap" style="position:relative;">
+      <a class="plan-card" href="plan.html?plan=${p.slug}">
+        <div class="plan-card-profile">${p.profile}</div>
+        <div class="plan-card-title">${p.profile} ${p.course_number}</div>
+        <div class="plan-card-date">Starting ${fmt}</div>
+        <div class="plan-card-footer">
+          <span class="plan-card-meta">${p.slug}</span>
+          <button class="btn-delete-plan" data-slug="${p.slug}" title="Delete plan">Delete</button>
+        </div>
+      </a>
+    </div>`;
   }).join('');
+  // Delete buttons — stop propagation so card link doesn't fire
+  el.querySelectorAll('.btn-delete-plan').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.preventDefault(); e.stopPropagation();
+      const slug = btn.dataset.slug;
+      if (!confirm(`Delete plan "${slug}"? This cannot be undone.`)) return;
+      btn.textContent = 'Deleting…'; btn.disabled = true;
+      const { error } = await _sb.from('plans').delete().eq('slug', slug);
+      if (error) { alert('Error: ' + error.message); btn.textContent = 'Delete'; btn.disabled = false; return; }
+      loadPlans();
+    });
+  });
 }
 
 loadPlans();
