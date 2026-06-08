@@ -91,7 +91,7 @@ header{margin-bottom:32px;}
       <input id="f-start" type="date">
     </div>
     <div class="field">
-      <label>Start slot <span style="font-size:0.72rem;color:#4a5570">(first session on day 1 — leave as AM 1 if course starts normally)</span></label>
+      <label>Start slot <span style="font-size:0.72rem;color:#4a5570">(if Intro to APO starts late, everything shifts right from here)</span></label>
       <select id="f-start-slot">
         <option value="am1">AM 1 (08:30) — normal start</option>
         <option value="am2">AM 2 (10:30) — skip AM 1</option>
@@ -213,18 +213,32 @@ function generateWorkingDays(startDate, count, negated) {
   return days;
 }
 
-const SLOT_ORDER = ['am1', 'am2', 'lunch', 'pm1', 'pm2'];
+const SLOT_ORDER = ['am1', 'am2', 'pm1', 'pm2']; // teachable slots in order
 function buildTimetableData(template, startDate, negated, startSlot) {
+  // Flatten template to an ordered sequence of slot contents
+  const contents = [];
+  template.forEach(daySlots => {
+    [...daySlots]
+      .sort((a, b) => SLOT_ORDER.indexOf(a.slot) - SLOT_ORDER.indexOf(b.slot))
+      .forEach(s => contents.push(s));
+  });
+
+  // Build ordered list of (date, slot) positions starting from startSlot on day 1
   const startIdx = SLOT_ORDER.indexOf(startSlot || 'am1');
-  const workingDays = generateWorkingDays(startDate, template.length, negated);
+  // Generate a few extra days as buffer for the rightward shift
+  const workingDays = generateWorkingDays(startDate, template.length + 3, negated);
+  const positions = [];
+  workingDays.forEach((date, dayIdx) => {
+    const slots = dayIdx === 0 ? SLOT_ORDER.slice(startIdx) : SLOT_ORDER;
+    slots.forEach(slot => positions.push({ date, slot }));
+  });
+
+  // Place each content item into the next available position
   const data = {};
-  template.forEach((daySlots, i) => {
-    const date = workingDays[i];
-    daySlots.forEach(slot => {
-      // On day 1, skip slots that come before the chosen start slot
-      if (i === 0 && SLOT_ORDER.indexOf(slot.slot) < startIdx) return;
-      data[date + '_' + slot.slot] = Object.assign({}, slot, { date });
-    });
+  contents.forEach((content, i) => {
+    if (i >= positions.length) return;
+    const { date, slot } = positions[i];
+    data[date + '_' + slot] = Object.assign({}, content, { date, slot });
   });
   return data;
 }
