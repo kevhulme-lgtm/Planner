@@ -865,11 +865,6 @@ async function saveNote(key) {
   setTimeout(() => { s.textContent = ''; }, 3000);
 }
 
-document.getElementById('panel-close').addEventListener('click', closePanel);
-document.getElementById('panel-overlay').addEventListener('click', closePanel);
-document.querySelectorAll('.panel-tab').forEach(t => {
-  t.addEventListener('click', () => switchTab(t.dataset.tab));
-});
 </script>
 
 <!-- ── LESSON PANEL ── -->
@@ -889,7 +884,7 @@ document.querySelectorAll('.panel-tab').forEach(t => {
   <div id="panel-body">
     <iframe id="panel-book-frame" class="active" sandbox="allow-same-origin allow-scripts"></iframe>
     <div id="panel-notes-tab">
-      <div id="panel-notes-label">Session notes (saved locally — Supabase sync coming)</div>
+      <div id="panel-notes-label">Session notes — saved to Supabase (local backup always kept)</div>
       <textarea id="panel-notes" placeholder="Teaching notes, student feedback, pace adjustments…"></textarea>
       <div id="panel-notes-actions">
         <button id="panel-save-btn">Save notes</button>
@@ -898,6 +893,15 @@ document.querySelectorAll('.panel-tab').forEach(t => {
     </div>
   </div>
 </div>
+
+<script>
+// Wire up panel controls — must be after panel HTML exists in the DOM
+document.getElementById('panel-close').addEventListener('click', closePanel);
+document.getElementById('panel-overlay').addEventListener('click', closePanel);
+document.querySelectorAll('.panel-tab').forEach(t => {
+  t.addEventListener('click', () => switchTab(t.dataset.tab));
+});
+</script>
 
 </body>
 </html>
