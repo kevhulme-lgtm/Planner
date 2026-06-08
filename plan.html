@@ -50,6 +50,11 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 .cell-period{font-size:0.62rem;font-family:'DM Mono',monospace;color:#4a5570;margin-top:auto;font-weight:500;}
 .cell-main-exam{font-size:0.75rem;color:#fff;font-weight:600;line-height:1.3;flex:1;}
 .cell-period-exam{font-size:0.62rem;font-family:'DM Mono',monospace;color:#ffaaaa;margin-top:auto;font-weight:500;}
+.cell-maths.done{opacity:0.55;}
+.cell-maths.done .cell-main{text-decoration:line-through;color:#6a7a7a;}
+.cell-done-badge{position:absolute;top:4px;right:4px;font-size:0.65rem;background:#1a6b4a;color:#7ecfaa;border-radius:3px;padding:1px 5px;font-family:'DM Mono',monospace;font-weight:600;}
+.cell-cut{outline:2px dashed #f0a830 !important;outline-offset:-2px;animation:pulse-cut 1s infinite;}
+@keyframes pulse-cut{0%,100%{outline-color:#f0a830;}50%{outline-color:#7ecfaa;}}
 .cell-airday{background:#0e1a2e;display:flex;align-items:center;justify-content:center;border-left:4px solid #1a4a7a;}
 .cell-airday-label{font-size:0.72rem;color:#4a8abf;text-align:center;line-height:1.4;padding:2px;font-weight:600;letter-spacing:0.04em;}
 #loading-state{color:#4a5570;font-family:'DM Mono',monospace;font-size:0.85rem;padding:40px 0;}
@@ -130,6 +135,8 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
     <span id="panel-klp-ref"></span>
     <span id="panel-klp-title"></span>
     <span id="panel-period"></span>
+    <button id="panel-done-btn" title="Toggle done" style="background:none;border:1px solid #3a4258;color:#8a95a8;font-size:0.75rem;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;flex-shrink:0;">✓ Done</button>
+    <button id="panel-cut-btn" title="Move to another slot" style="background:none;border:1px solid #3a4258;color:#8a95a8;font-size:0.75rem;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;flex-shrink:0;">✂ Move</button>
     <button id="panel-close" title="Close">&#x2715;</button>
   </div>
   <div id="panel-tabs">
@@ -196,7 +203,7 @@ const PERIOD_KLP_MAP={pt1:{1:'1.2.1.1.1',2:'1.2.1.1.4',3:'1.2.1.1.4',4:'1.2.1.1.
 const KLP_REF_DESC={'1.2.1.1.1':'Diagnostic quiz / Decimal system / Estimation','1.2.1.1.4':'Standard operators','1.2.1.1.5':'Directed numbers','1.2.1.1.6':'Fractions','1.2.1.1.7':'Operators on fractions','1.2.1.1.8':'Operators on decimals','1.2.1.1.9':'Rounding / decimal types','1.2.1.1.11':'FDP conversion','1.2.1.1.12':'Percentage values','1.2.1.1.13':'Arithmetic ratios / Non-calc exam','1.2.1.1.14':'Proportionality','1.2.1.1.15':'HCF & LCM','1.2.1.1.16':'BIDMAS','1.2.1.1.17':'SI units','1.2.1.1.18':'Indices & standard form','1.2.1.2.1':'Probability','1.2.2.1.1':'Symbols & equations','1.2.2.1.2':'Index laws','1.2.2.1.3':'Like/unlike terms','1.2.2.1.4':'Simplify like/unlike terms','1.2.2.1.5':'Simplify brackets','1.2.2.1.6':'HCF & factorisation','1.2.2.1.7':'Quadratic factorisation','1.2.2.1.8':'Algebraic operators','1.2.2.1.9':'Transposition intro','1.2.2.1.10':'Change of subject','1.2.2.2.1':'Substitution','1.2.2.2.2':'Linear equations','1.2.2.2.3':'Quadratic (factor)','1.2.2.2.4':'Quadratic formula','1.2.2.2.5':'Simultaneous equations','1.2.2.3.1':'Index/log conversion','1.2.2.3.2':'Laws of logarithms','1.2.2.3.3':'Indicial equations','1.2.2.4.1':'Plotting graphs','1.2.2.4.2':'Straight-line graphs','1.2.2.4.3':'Simultaneous (graphical)','1.2.2.5.1':'EAL Exam 003A','1.2.2.6.1':'Triangle properties','1.2.2.6.2':'Pythagoras theorem','1.2.2.6.3':'Pythagoras (calculation)','1.2.2.6.4':'Trig ratios','1.2.2.6.5':'Trig functions','1.2.2.6.6':'Inverse trig','1.2.2.6.7':'Trig identities','1.2.2.6.8':'Sine/cos graphs (CAST)','1.2.2.6.9':'Sine & cosine rules','1.2.2.6.10':'Radians','1.2.2.7.1':'Circle properties','1.2.2.7.2':'Unit conversions','1.2.2.7.3':'Perimeter/area/volume','1.2.2.7.4':'Compound shapes','1.2.2.7.5':'2D to 3D prism','1.2.2.7.6':'Surface area & volume','1.2.2.8.1':'EAL Exam 003B','1.2.2.9.1':'Differentiation','1.2.2.9.2':'2nd derivatives','1.2.2.9.3':'Displacement/velocity/acceleration','1.2.2.9.4':'Differentiation notation','1.2.2.10.1':'Integration intro','1.2.2.10.5':'Standard integrals','1.2.2.10.6':'Definite integrals','1.2.2.10.7':'Integration problems','1.2.2.11.1':'Data types','1.2.2.11.3':'Statistical diagrams','1.2.2.12.1':'Mean/median/mode','1.2.2.12.3':'Grouped mean','1.2.2.12.4':'Variance & std dev','1.2.2.12.5':'Population vs sample','1.2.2.13.1':'EAL Exam 003C'};
 const SECTION_BOOK_FILE={pt1:'books/pt1.html',pt2a:'books/book1.html',pt2b:'books/book2.html',pt2c:'books/book3.html'};
 
-let tData={}, negatedDateMap={}, weekIdx=0, dragKey=null, saveTimer=null, WEEKS=[];
+let tData={}, negatedDateMap={}, weekIdx=0, dragKey=null, cutKey=null, saveTimer=null, WEEKS=[];
 
 function getWeeks(){
   const dates=Object.keys(tData).map(k=>k.split('_')[0]).filter(Boolean).sort();
@@ -244,28 +251,29 @@ function render(){
     grid.appendChild(lbl);
     week.days.forEach(date=>{
       const key=date+'_'+slot.id, entry=tData[key], cell=document.createElement('div');
-      if(negatedDateMap[date]&&slot.id==='am1'){cell.className='cell cell-airday';cell.innerHTML='<div class="cell-airday-label">✈ '+negatedDateMap[date]+'</div>';grid.appendChild(cell);return;}
-      if(negatedDateMap[date]){cell.className='cell cell-airday';cell.style.opacity='0.3';grid.appendChild(cell);return;}
+      if((date in negatedDateMap)&&slot.id==='am1'){const adLbl=negatedDateMap[date]||'Off';cell.className='cell cell-airday';cell.innerHTML='<div class="cell-airday-label">✈ '+adLbl+'</div>';grid.appendChild(cell);return;}
+      if(date in negatedDateMap){cell.className='cell cell-airday';cell.style.opacity='0.3';grid.appendChild(cell);return;}
       if(!entry){
         cell.className='cell cell-empty';
         cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('drag-over');});
         cell.addEventListener('dragleave',()=>cell.classList.remove('drag-over'));
-        cell.addEventListener('drop',()=>{cell.classList.remove('drag-over');handleDrop(key);});
+        cell.addEventListener('drop',()=>{cell.classList.remove('drag-over');if(cutKey){handleCutPaste(key);}else{handleDrop(key);}});
+        cell.addEventListener('click',()=>{if(cutKey)handleCutPaste(key);});
       } else if(entry.isMaths){
         const sc=SEC_COLORS[entry.section]||SEC_COLORS.pt1;
         const lbl2=entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single);
         const pLbl=entry.single?'P'+entry.pEnd:'P'+(entry.pEnd-1)+'–P'+entry.pEnd;
-        cell.className='cell cell-maths';
+        cell.className='cell cell-maths'+(entry.done?' done':'')+(key===cutKey?' cell-cut':'');
         if(entry.isExam){cell.style.background='#2a0808';cell.style.borderLeft='4px solid #cc2222';cell.innerHTML='<div class="cell-tag" style="background:#8b1a1a">⚠ EXAM</div><div class="cell-main-exam">'+lbl2+'</div><div class="cell-period-exam">'+pLbl+'</div>';}
-        else{cell.style.background=sc.light;cell.style.borderLeft='4px solid '+sc.bg;cell.innerHTML='<div class="cell-tag" style="background:'+sc.bg+'">'+SEC_LABELS[entry.section]+'</div><div class="cell-main">'+lbl2+'</div><div class="cell-period">'+pLbl+'</div>';}
+        else{cell.style.background=sc.light;cell.style.borderLeft='4px solid '+sc.bg;cell.innerHTML='<div class="cell-tag" style="background:'+sc.bg+'">'+SEC_LABELS[entry.section]+'</div><div class="cell-main">'+lbl2+'</div><div class="cell-period">'+pLbl+'</div>'+(entry.done?'<div class="cell-done-badge">✓ done</div>':'');}
         cell.draggable=true;
         let didDrag=false;
         cell.addEventListener('dragstart',e=>{dragKey=key;didDrag=true;e.dataTransfer.effectAllowed='move';});
         cell.addEventListener('dragend',()=>{setTimeout(()=>{didDrag=false;},50);});
         cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('drag-over');});
         cell.addEventListener('dragleave',()=>cell.classList.remove('drag-over'));
-        cell.addEventListener('drop',()=>{cell.classList.remove('drag-over');handleDrop(key);});
-        cell.addEventListener('click',()=>{if(!didDrag)openPanel(Object.assign({},entry));});
+        cell.addEventListener('drop',()=>{cell.classList.remove('drag-over');if(cutKey){handleCutPaste(key);}else{handleDrop(key);}});
+        cell.addEventListener('click',()=>{if(!didDrag){if(cutKey){handleCutPaste(key);}else{openPanel(Object.assign({key},entry));}}});
       } else {
         const isPEd=/p\s*ed/i.test(entry.label), isOtherExam=/exam/i.test(entry.label);
         if(isPEd){cell.className='cell cell-ped';cell.innerHTML='<div class="cell-ped-label">'+entry.label+'</div>';}
@@ -289,6 +297,17 @@ function handleDrop(targetKey){
     else delete tData[dragKey];
   }
   dragKey=null; render(); scheduleSave();
+}
+function handleCutPaste(targetKey){
+  if(!cutKey||cutKey===targetKey){cutKey=null;render();return;}
+  const src=tData[cutKey],tgt=tData[targetKey];
+  if(src){
+    const[tDate,tSlot]=targetKey.split('_'),[sDate,sSlot]=cutKey.split('_');
+    tData[targetKey]=Object.assign({},src,{date:tDate,slot:tSlot});
+    if(tgt)tData[cutKey]=Object.assign({},tgt,{date:sDate,slot:sSlot});
+    else delete tData[cutKey];
+  }
+  cutKey=null; render(); scheduleSave();
 }
 
 function buildLegend(){
@@ -324,6 +343,19 @@ document.getElementById('btnNext').addEventListener('click',()=>{weekIdx++;rende
 // PANEL
 let _currentNoteKey=null;
 function klpRefsForEntry(entry){const map=PERIOD_KLP_MAP[entry.section];if(!map)return[];const refs=[],add=r=>{if(r&&!refs.includes(r))refs.push(r);};if(entry.single){add(map[entry.pEnd]);}else{add(map[entry.pEnd-1]);add(map[entry.pEnd]);}return refs;}
+function toggleDone(key){
+  if(!tData[key])return;
+  tData[key].done=!tData[key].done;
+  render(); scheduleSave();
+}
+function startCut(key){
+  cutKey=key;
+  closePanel();
+  render();
+  // Show a cancel-cut toast
+  const ind=document.getElementById('save-indicator');
+  ind.textContent='✂ Cut — click target slot to move (any week)'; ind.className='save-indicator saving';
+}
 async function openPanel(entry){
   const refs=klpRefsForEntry(entry),primaryRef=refs[0]||null;
   const desc=primaryRef?(KLP_REF_DESC[primaryRef]||entry.label):entry.label;
@@ -347,6 +379,12 @@ async function openPanel(entry){
   document.getElementById('links-list').innerHTML='<div class="empty-msg">Loading…</div>';
   document.getElementById('resources-list').innerHTML='';
   refreshLinksTab(noteKey);
+  const doneBtn=document.getElementById('panel-done-btn');
+  const cutBtn=document.getElementById('panel-cut-btn');
+  doneBtn.onclick=()=>{if(entry.key){toggleDone(entry.key);entry.done=!entry.done;doneBtn.textContent=entry.done?'✓ Done ✓':'✓ Done';doneBtn.style.color=entry.done?'#7ecfaa':'#8a95a8';}};
+  doneBtn.textContent=entry.done?'✓ Done ✓':'✓ Done';
+  doneBtn.style.color=entry.done?'#7ecfaa':'#8a95a8';
+  cutBtn.onclick=()=>{if(entry.key)startCut(entry.key);};
   switchTab('book');
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('lesson-panel').classList.add('open');
