@@ -75,10 +75,15 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 #panel-book-link{margin-left:auto;align-self:center;padding:0 14px;font-size:0.73rem;color:#5a8fcc;text-decoration:none;}
 #panel-book-link:hover{color:#7ecfaa;}
 #panel-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-#panel-book-frame{width:100%;flex:1;border:none;display:none;background:#fff;}
-#panel-book-frame.active{display:block;}
-#panel-notes-tab,#panel-links-tab,#panel-resources-tab{display:none;flex-direction:column;flex:1;padding:14px;gap:8px;overflow-y:auto;}
-#panel-notes-tab.active,#panel-links-tab.active,#panel-resources-tab.active{display:flex;}
+#panel-lp-tab{display:none;flex-direction:column;flex:1;overflow:hidden;}
+#panel-lp-tab.active{display:flex;}
+#panel-lp-set-row{display:flex;gap:6px;padding:10px 14px;background:#181c28;border-bottom:1px solid #3a4258;flex-shrink:0;align-items:center;}
+#panel-lp-set-row input{flex:1;background:#1c2030;border:1px solid #3a4258;border-radius:5px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:5px 10px;}
+#panel-lp-set-row input:focus{outline:none;border-color:#7ecfaa;}
+#panel-book-frame,#panel-lp-frame{width:100%;flex:1;border:none;display:none;background:#fff;}
+#panel-book-frame.active,#panel-lp-frame.active{display:block;}
+#panel-notes-tab,#panel-links-tab{display:none;flex-direction:column;flex:1;padding:14px;gap:8px;overflow-y:auto;}
+#panel-notes-tab.active,#panel-links-tab.active{display:flex;}
 #panel-notes-label{font-size:0.72rem;color:#8a95a8;font-family:'DM Mono',monospace;}
 #panel-notes{flex:1;background:#1c2030;border:1px solid #3a4258;border-radius:6px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.87rem;padding:12px;resize:none;line-height:1.65;min-height:120px;}
 #panel-notes:focus{outline:none;border-color:#7ecfaa;}
@@ -147,12 +152,13 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
   <div id="panel-tabs">
     <div class="panel-tab active" data-tab="book">&#x1F4D6; Book</div>
     <div class="panel-tab" data-tab="notes">&#x1F4DD; Notes</div>
-    <div class="panel-tab" data-tab="links">&#x1F517; Links</div>
-    <div class="panel-tab" data-tab="resources">&#x1F5BC; Resources</div>
+    <div class="panel-tab" data-tab="links">&#x1F517; Links &amp; Resources</div>
+    <div class="panel-tab" data-tab="lessonplan">&#x1F4CB; Lesson Plan</div>
     <a id="panel-book-link" href="#" target="_blank">&#x2197; Full book</a>
   </div>
   <div id="panel-body">
     <iframe id="panel-book-frame" class="active" sandbox="allow-same-origin allow-scripts"></iframe>
+    <iframe id="panel-lp-frame" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
     <div id="panel-notes-tab">
       <div id="panel-notes-label">Notes &#x2014; saved to Supabase (local backup always kept)</div>
       <textarea id="panel-notes" placeholder="Teaching notes, student feedback, pace adjustments&#x2026;"></textarea>
@@ -164,24 +170,23 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
     <div id="panel-links-tab">
       <div id="links-list"></div>
       <div class="add-form">
-        <input id="link-input-label" type="text" placeholder="Label (e.g. Khan Academy &#x2014; BIDMAS)">
+        <input id="link-input-label" type="text" placeholder="Label (e.g. Khan Academy — BIDMAS)">
         <div class="add-row">
-          <input id="link-input-url" type="url" placeholder="https://&#x2026;" style="flex:1">
+          <input id="link-input-url" type="url" placeholder="https://…" style="flex:1">
           <button class="btn-add" id="links-add-btn">Add link</button>
         </div>
+        <div style="font-size:0.7rem;color:#4a5570;font-family:'DM Mono',monospace;">Toggle 📌 Embed on any link to display it inline as a resource</div>
         <span class="tab-status" id="links-status"></span>
       </div>
     </div>
-    <div id="panel-resources-tab">
-      <div id="resources-list"></div>
-      <div class="add-form">
-        <input id="res-input-label" type="text" placeholder="Label (e.g. Worked example &#x2014; chain rule)">
-        <div class="add-row">
-          <input id="res-input-url" type="url" placeholder="https://&#x2026; (image, YouTube, PDF&#x2026;)" style="flex:1">
-          <button class="btn-add" id="res-add-btn">Add resource</button>
-        </div>
-        <span class="tab-status" id="res-status"></span>
+    <div id="panel-lp-tab">
+      <div id="panel-lp-set-row">
+        <input id="lp-url-input" type="url" placeholder="Lesson plan PDF URL…">
+        <button class="btn-add" id="lp-url-save" style="white-space:nowrap">Set PDF</button>
+        <button class="link-btn" id="lp-url-clear">Clear</button>
+        <span class="tab-status" id="lp-status"></span>
       </div>
+      <iframe id="panel-lp-frame" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
     </div>
   </div>
 </div>
@@ -386,6 +391,7 @@ async function openPanel(entry){
   document.getElementById('links-list').innerHTML='<div class="empty-msg">Loading…</div>';
   document.getElementById('resources-list').innerHTML='';
   refreshLinksTab(noteKey);
+  loadLessonPlan(noteKey);
   const doneBtn=document.getElementById('panel-done-btn');
   const cutBtn=document.getElementById('panel-cut-btn');
   doneBtn.onclick=()=>{if(entry.key){toggleDone(entry.key);entry.done=!entry.done;doneBtn.textContent=entry.done?'✓ Done ✓':'✓ Done';doneBtn.style.color=entry.done?'#7ecfaa':'#8a95a8';}};
@@ -421,9 +427,9 @@ async function openPanel(entry){
 function closePanel(){document.getElementById('panel-overlay').classList.remove('open');document.getElementById('lesson-panel').classList.remove('open');}
 function switchTab(tab){
   document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active'));
-  ['panel-book-frame','panel-notes-tab','panel-links-tab','panel-resources-tab'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  ['panel-book-frame','panel-notes-tab','panel-links-tab','panel-lp-tab','panel-lp-frame'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
   document.querySelector('[data-tab="'+tab+'"]').classList.add('active');
-  const map={book:'panel-book-frame',notes:'panel-notes-tab',links:'panel-links-tab',resources:'panel-resources-tab'};
+  const map={book:'panel-book-frame',notes:'panel-notes-tab',links:'panel-links-tab',lessonplan:'panel-lp-tab'};
   if(map[tab])document.getElementById(map[tab]).classList.add('active');
 }
 
@@ -441,27 +447,62 @@ async function toggleEmbed(id,key,newVal){await _sb.from('links').update({embed:
 function youtubeEmbedUrl(url){const m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);return m?'https://www.youtube.com/embed/'+m[1]:null;}
 function isImage(url){return/\.(png|jpe?g|gif|svg|webp)(\?.*)?$/i.test(url);}
 function isPdf(url){return/\.pdf(\?.*)?$/i.test(url);}
+function embedHtml(l){
+  const ytUrl=youtubeEmbedUrl(l.url);
+  if(isImage(l.url))return'<img class="resource-embed-img" src="'+l.url+'" alt="'+l.label+'" loading="lazy">';
+  if(ytUrl)return'<iframe class="resource-embed" src="'+ytUrl+'" height="240" allowfullscreen></iframe>';
+  if(isPdf(l.url))return'<iframe class="resource-embed" src="'+l.url+'" height="360"></iframe>';
+  return'<div class="resource-no-embed">⚠ Can't embed directly — <a href="'+l.url+'" target="_blank">open in new tab</a></div>';
+}
 function renderLinksList(links,key){
   const list=document.getElementById('links-list');
   if(!links.length){list.innerHTML='<div class="empty-msg">No links yet — add one below</div>';return;}
-  list.innerHTML=links.map(l=>'<div class="link-item" data-id="'+l.id+'"><span class="link-item-label" title="'+l.label+'">'+l.label+'</span><span class="link-item-url" title="'+l.url+'">'+l.url+'</span><a href="'+l.url+'" target="_blank" class="link-btn">Open</a><button class="link-btn embed-btn'+(l.embed?' embed-on':'')+'">'+( l.embed?'📌 Embedded':'📌 Embed')+'</button><button class="link-btn del del-btn">✕</button></div>').join('');
-  list.querySelectorAll('.del-btn').forEach((btn,i)=>{btn.addEventListener('click',async()=>{await deleteLink(links[i].id,key);renderLinksList(_linksCache[key]||[],key);renderResourcesList(_linksCache[key]||[]);});});
-  list.querySelectorAll('.embed-btn').forEach((btn,i)=>{btn.addEventListener('click',async()=>{const nv=!links[i].embed;await toggleEmbed(links[i].id,key,nv);renderLinksList(_linksCache[key]||[],key);renderResourcesList(_linksCache[key]||[]);});});
+  list.innerHTML=links.map(l=>{
+    const embed=l.embed?'<div class="resource-item" style="margin-top:6px;margin-bottom:4px;">'+embedHtml(l)+'</div>':'';
+    return'<div class="link-item" data-id="'+l.id+'"><span class="link-item-label" title="'+l.label+'">'+l.label+'</span><span class="link-item-url" title="'+l.url+'">'+l.url+'</span><a href="'+l.url+'" target="_blank" class="link-btn">Open</a><button class="link-btn embed-btn'+(l.embed?' embed-on':'')+'">'+( l.embed?'📌 On':'📌 Embed')+'</button><button class="link-btn del del-btn">✕</button></div>'+embed;
+  }).join('');
+  list.querySelectorAll('.del-btn').forEach((btn,i)=>{btn.addEventListener('click',async()=>{await deleteLink(links[i].id,key);renderLinksList(_linksCache[key]||[],key);});});
+  list.querySelectorAll('.embed-btn').forEach((btn,i)=>{btn.addEventListener('click',async()=>{const nv=!links[i].embed;await toggleEmbed(links[i].id,key,nv);renderLinksList(_linksCache[key]||[],key);});});
 }
-function renderResourcesList(links){
-  const list=document.getElementById('resources-list'),embeds=links.filter(l=>l.embed);
-  if(!embeds.length){list.innerHTML='<div class="empty-msg">No resources yet — add a URL below, or toggle 📌 Embed in the Links tab</div>';return;}
-  list.innerHTML=embeds.map(l=>{const ytUrl=youtubeEmbedUrl(l.url);let body='';if(isImage(l.url))body='<img class="resource-embed-img" src="'+l.url+'" alt="'+l.label+'" loading="lazy">';else if(ytUrl)body='<iframe class="resource-embed" src="'+ytUrl+'" height="280" allowfullscreen></iframe>';else if(isPdf(l.url))body='<iframe class="resource-embed" src="'+l.url+'" height="400"></iframe>';else body='<div class="resource-no-embed">⚠ Can\'t embed directly — <a href="'+l.url+'" target="_blank">open in new tab</a></div>';return'<div class="resource-item"><div class="resource-item-header"><span class="resource-item-label">'+l.label+'</span><a href="'+l.url+'" target="_blank" class="link-btn">Open</a></div>'+body+'</div>';}).join('');
-}
-async function refreshLinksTab(key){const links=await loadLinks(key);renderLinksList(links,key);renderResourcesList(links);}
+async function refreshLinksTab(key){const links=await loadLinks(key);renderLinksList(links,key);}
 </script>
 <script>
+// Lesson Plan
+const _lpCache={};
+async function loadLessonPlan(key){
+  const lpKey='lp_'+key;
+  if(_lpCache[lpKey]!==undefined){applyLpUrl(_lpCache[lpKey]);return;}
+  try{const{data}=await _sb.from('notes').select('content').eq('note_key',lpKey).maybeSingle();
+    const url=(data&&data.content)||'';_lpCache[lpKey]=url;applyLpUrl(url);}
+  catch{applyLpUrl('');}
+}
+function applyLpUrl(url){
+  document.getElementById('lp-url-input').value=url;
+  const frame=document.getElementById('panel-lp-frame');
+  if(url){frame.src=url;frame.classList.add('active');}
+  else{frame.src='';frame.classList.remove('active');}
+  document.getElementById('lp-status').textContent='';
+}
+document.getElementById('lp-url-save').addEventListener('click',async()=>{
+  const url=document.getElementById('lp-url-input').value.trim();
+  const lpKey='lp_'+_currentNoteKey;
+  const status=document.getElementById('lp-status');
+  status.textContent='Saving…';
+  const{error}=await _sb.from('notes').upsert({note_key:lpKey,content:url,updated_at:new Date().toISOString()},{onConflict:'note_key'});
+  if(!error){_lpCache[lpKey]=url;applyLpUrl(url);status.textContent='Saved ✓';}
+  else status.textContent='Error ⚠';
+  setTimeout(()=>{status.textContent='';},2500);
+});
+document.getElementById('lp-url-clear').addEventListener('click',async()=>{
+  const lpKey='lp_'+_currentNoteKey;
+  await _sb.from('notes').upsert({note_key:lpKey,content:'',updated_at:new Date().toISOString()},{onConflict:'note_key'});
+  _lpCache[lpKey]=''; applyLpUrl('');
+});
 document.getElementById('panel-close').addEventListener('click',closePanel);
 document.getElementById('panel-overlay').addEventListener('click',closePanel);
 document.querySelectorAll('.panel-tab').forEach(t=>{t.addEventListener('click',()=>switchTab(t.dataset.tab));});
-document.getElementById('links-add-btn').addEventListener('click',async()=>{const label=document.getElementById('link-input-label').value.trim(),url=document.getElementById('link-input-url').value.trim(),status=document.getElementById('links-status');if(!url){status.textContent='Please enter a URL';return;}status.textContent='Saving…';const{error}=await addLink(_currentNoteKey,label||url,url,false);if(error){status.textContent='Error ⚠';return;}document.getElementById('link-input-label').value='';document.getElementById('link-input-url').value='';status.textContent='Added ✓';setTimeout(()=>{status.textContent='';},2000);renderLinksList(_linksCache[_currentNoteKey]||[],_currentNoteKey);renderResourcesList(_linksCache[_currentNoteKey]||[]);});
+document.getElementById('links-add-btn').addEventListener('click',async()=>{const label=document.getElementById('link-input-label').value.trim(),url=document.getElementById('link-input-url').value.trim(),status=document.getElementById('links-status');if(!url){status.textContent='Please enter a URL';return;}status.textContent='Saving…';const{error}=await addLink(_currentNoteKey,label||url,url,false);if(error){status.textContent='Error ⚠';return;}document.getElementById('link-input-label').value='';document.getElementById('link-input-url').value='';status.textContent='Added ✓';setTimeout(()=>{status.textContent='';},2000);renderLinksList(_linksCache[_currentNoteKey]||[],_currentNoteKey);});
 document.getElementById('link-input-url').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('links-add-btn').click();});
-document.getElementById('res-add-btn').addEventListener('click',async()=>{const label=document.getElementById('res-input-label').value.trim(),url=document.getElementById('res-input-url').value.trim(),status=document.getElementById('res-status');if(!url){status.textContent='Please enter a URL';return;}status.textContent='Saving…';const{error}=await addLink(_currentNoteKey,label||url,url,true);if(error){status.textContent='Error ⚠';return;}document.getElementById('res-input-label').value='';document.getElementById('res-input-url').value='';status.textContent='Added ✓';setTimeout(()=>{status.textContent='';},2000);renderLinksList(_linksCache[_currentNoteKey]||[],_currentNoteKey);renderResourcesList(_linksCache[_currentNoteKey]||[]);});
 document.getElementById('res-input-url').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('res-add-btn').click();});
 </script>
 </body>
