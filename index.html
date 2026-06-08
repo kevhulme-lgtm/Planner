@@ -91,11 +91,17 @@ header{margin-bottom:32px;}
       <input id="f-start" type="date">
     </div>
     <div class="field">
-      <label>Negated days (Air Days, bank holidays, leave)</label>
-      <div class="negated-row">
-        <input id="f-neg-date" type="date">
-        <button class="btn-cancel" id="btn-add-neg" style="white-space:nowrap">Add day</button>
+      <label>Negated days (Air Days, bank holidays, leave, travel)</label>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <input id="f-neg-label" type="text" placeholder="Label (e.g. Air Day, Easter leave…)" style="flex:2">
       </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <input id="f-neg-from" type="date" style="flex:1;min-width:130px">
+        <span style="font-size:0.78rem;color:#8a95a8;white-space:nowrap">to</span>
+        <input id="f-neg-to" type="date" style="flex:1;min-width:130px">
+        <button class="btn-cancel" id="btn-add-neg" style="white-space:nowrap">Add</button>
+      </div>
+      <div style="font-size:0.7rem;color:#4a5570;margin-top:4px;font-family:'DM Mono',monospace;">Leave "to" blank for a single day</div>
       <div id="negated-list"></div>
     </div>
     <div class="modal-actions">
@@ -141,30 +147,45 @@ async function loadPlans() {
 loadPlans();
 
 // ── Negated days ──────────────────────────────────────────────────────────────
-let negatedDays = [];
+// Each entry: { label, dates: [iso, iso, ...] }
+let negatedEntries = [];
+
+function dateRange(from, to) {
+  const days = [];
+  const cur = new Date(from + 'T12:00:00');
+  const end = new Date((to || from) + 'T12:00:00');
+  while (cur <= end) { days.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate() + 1); }
+  return days;
+}
 
 function renderNegated() {
-  document.getElementById('negated-list').innerHTML = negatedDays
-    .sort()
-    .map(d => {
-      const fmt = new Date(d + 'T12:00:00').toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
-      return `<span class="neg-chip">${fmt}<button data-d="${d}">✕</button></span>`;
-    }).join('');
+  document.getElementById('negated-list').innerHTML = negatedEntries.map((e, i) => {
+    const fmtD = d => new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    const span = e.dates.length === 1
+      ? fmtD(e.dates[0])
+      : fmtD(e.dates[0]) + ' – ' + fmtD(e.dates[e.dates.length-1]);
+    const lbl = e.label ? `<strong>${e.label}</strong> ` : '';
+    return `<span class="neg-chip">${lbl}${span} <span style="color:#4a5570">(${e.dates.length}d)</span><button data-i="${i}">✕</button></span>`;
+  }).join('');
   document.querySelectorAll('.neg-chip button').forEach(b => {
     b.addEventListener('click', () => {
-      negatedDays = negatedDays.filter(d => d !== b.dataset.d);
+      negatedEntries.splice(parseInt(b.dataset.i), 1);
       renderNegated();
     });
   });
 }
 
 document.getElementById('btn-add-neg').addEventListener('click', () => {
-  const val = document.getElementById('f-neg-date').value;
-  if (val && !negatedDays.includes(val)) {
-    negatedDays.push(val);
-    renderNegated();
-  }
-  document.getElementById('f-neg-date').value = '';
+  const from = document.getElementById('f-neg-from').value;
+  const to   = document.getElementById('f-neg-to').value;
+  const label= document.getElementById('f-neg-label').value.trim();
+  if (!from) return;
+  const dates = dateRange(from, to || from);
+  negatedEntries.push({ label, dates });
+  renderNegated();
+  document.getElementById('f-neg-from').value = '';
+  document.getElementById('f-neg-to').value   = '';
+  document.getElementById('f-neg-label').value = '';
 });
 
 // ── Plan generator ────────────────────────────────────────────────────────────
@@ -197,7 +218,7 @@ function buildTimetableData(template, startDate, negated) {
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
 document.getElementById('btn-new-plan').addEventListener('click', () => {
-  negatedDays = [];
+  negatedEntries = [];
   renderNegated();
   document.getElementById('f-course').value = '';
   document.getElementById('f-start').value = '';
@@ -231,24 +252,30 @@ document.getElementById('btn-create').addEventListener('click', async () => {
   btn.disabled = true;
   status.textContent = 'Generating…';
 
+  const negatedDays = negatedEntries.flatMap(e => e.dates);
   const timetableData = buildTimetableData(template, startDate, negatedDays);
 
-  const { error } = await _sb.from('plans').insert({
-    slug,
-    profile,
-    course_number: courseNum,
-    start_date: startDate,
-    negated_days: negatedDays,
-    timetable_data: timetableData,
-  });
+  try {
+    const { error } = await _sb.from('plans').insert({
+      slug,
+      profile,
+      course_number: courseNum,
+      start_date: startDate,
+      negated_days: negatedEntries,
+      timetable_data: timetableData,
+    });
 
-  if (error) {
-    status.textContent = error.code === '23505' ? 'Plan already exists' : 'Error: ' + error.message;
+    if (error) {
+      status.textContent = error.code === '23505' ? 'Plan already exists: ' + slug : 'DB error: ' + error.message;
+      btn.disabled = false;
+      return;
+    }
+
+    window.location.href = 'plan.html?plan=' + slug;
+  } catch (err) {
+    status.textContent = 'Network error: ' + (err.message || err);
     btn.disabled = false;
-    return;
   }
-
-  window.location.href = 'plan.html?plan=' + slug;
 });
 </script>
 </body>
