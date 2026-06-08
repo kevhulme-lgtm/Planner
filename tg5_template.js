@@ -1,27 +1,6 @@
 // TG5 session template — Air Days excluded (entered as negated days at plan creation)
+// Day 1 = Intro to APO (AEAF brief removed)
 const TG5_TEMPLATE = [
-  [
-    {
-      "slot": "am1",
-      "label": "AEAF Apprenticeship Brief",
-      "isMaths": false
-    },
-    {
-      "slot": "am2",
-      "label": "AEAF Apprenticeship Brief",
-      "isMaths": false
-    },
-    {
-      "slot": "pm1",
-      "label": "AEAF Apprenticeship Brief",
-      "isMaths": false
-    },
-    {
-      "slot": "pm2",
-      "label": "AEAF Apprenticeship Brief",
-      "isMaths": false
-    }
-  ],
   [
     {
       "slot": "am1",

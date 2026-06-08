@@ -87,8 +87,17 @@ header{margin-bottom:32px;}
       <input id="f-course" type="text" placeholder="e.g. 088" maxlength="10">
     </div>
     <div class="field">
-      <label>Start date (first Monday of course)</label>
+      <label>Start date (first day of course)</label>
       <input id="f-start" type="date">
+    </div>
+    <div class="field">
+      <label>Start slot <span style="font-size:0.72rem;color:#4a5570">(first session on day 1 — leave as AM 1 if course starts normally)</span></label>
+      <select id="f-start-slot">
+        <option value="am1">AM 1 (08:30) — normal start</option>
+        <option value="am2">AM 2 (10:30) — skip AM 1</option>
+        <option value="pm1">PM 1 (13:30) — skip AM 1 & AM 2</option>
+        <option value="pm2">PM 2 (15:30) — afternoon only</option>
+      </select>
     </div>
     <div class="field">
       <label>Negated days (Air Days, bank holidays, leave, travel)</label>
@@ -204,12 +213,16 @@ function generateWorkingDays(startDate, count, negated) {
   return days;
 }
 
-function buildTimetableData(template, startDate, negated) {
+const SLOT_ORDER = ['am1', 'am2', 'lunch', 'pm1', 'pm2'];
+function buildTimetableData(template, startDate, negated, startSlot) {
+  const startIdx = SLOT_ORDER.indexOf(startSlot || 'am1');
   const workingDays = generateWorkingDays(startDate, template.length, negated);
   const data = {};
   template.forEach((daySlots, i) => {
     const date = workingDays[i];
     daySlots.forEach(slot => {
+      // On day 1, skip slots that come before the chosen start slot
+      if (i === 0 && SLOT_ORDER.indexOf(slot.slot) < startIdx) return;
       data[date + '_' + slot.slot] = Object.assign({}, slot, { date });
     });
   });
@@ -222,6 +235,7 @@ document.getElementById('btn-new-plan').addEventListener('click', () => {
   renderNegated();
   document.getElementById('f-course').value = '';
   document.getElementById('f-start').value = '';
+  document.getElementById('f-start-slot').value = 'am1';
   document.getElementById('modal-status').textContent = '';
   document.getElementById('modal-overlay').classList.add('open');
 });
@@ -239,6 +253,7 @@ document.getElementById('btn-create').addEventListener('click', async () => {
   const profile    = document.getElementById('f-profile').value;
   const courseNum  = document.getElementById('f-course').value.trim().toUpperCase();
   const startDate  = document.getElementById('f-start').value;
+  const startSlot  = document.getElementById('f-start-slot').value;
   const status     = document.getElementById('modal-status');
   const btn        = document.getElementById('btn-create');
 
@@ -253,7 +268,7 @@ document.getElementById('btn-create').addEventListener('click', async () => {
   status.textContent = 'Generating…';
 
   const negatedDays = negatedEntries.flatMap(e => e.dates);
-  const timetableData = buildTimetableData(template, startDate, negatedDays);
+  const timetableData = buildTimetableData(template, startDate, negatedDays, startSlot);
 
   try {
     const { error } = await _sb.from('plans').insert({
