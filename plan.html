@@ -385,8 +385,8 @@ async function openPanel(entry){
   document.getElementById('panel-notes').value=await loadNote(noteKey);
   document.getElementById('panel-save-status').textContent='';
   document.getElementById('panel-save-btn').onclick=()=>saveNote(noteKey);
-  ['link-input-label','link-input-url','res-input-label','res-input-url'].forEach(id=>{document.getElementById(id).value='';});
-  ['links-status','res-status'].forEach(id=>{document.getElementById(id).textContent='';});
+  ['link-input-label','link-input-url'].forEach(id=>{document.getElementById(id).value=''});
+  document.getElementById('links-status').textContent='';
   document.getElementById('links-list').innerHTML='<div class="empty-msg">Loading…</div>';
   document.getElementById('resources-list').innerHTML='';
   refreshLinksTab(noteKey);
@@ -502,7 +502,6 @@ document.getElementById('panel-overlay').addEventListener('click',closePanel);
 document.querySelectorAll('.panel-tab').forEach(t=>{t.addEventListener('click',()=>switchTab(t.dataset.tab));});
 document.getElementById('links-add-btn').addEventListener('click',async()=>{const label=document.getElementById('link-input-label').value.trim(),url=document.getElementById('link-input-url').value.trim(),status=document.getElementById('links-status');if(!url){status.textContent='Please enter a URL';return;}status.textContent='Saving…';const{error}=await addLink(_currentNoteKey,label||url,url,false);if(error){status.textContent='Error ⚠';return;}document.getElementById('link-input-label').value='';document.getElementById('link-input-url').value='';status.textContent='Added ✓';setTimeout(()=>{status.textContent='';},2000);renderLinksList(_linksCache[_currentNoteKey]||[],_currentNoteKey);});
 document.getElementById('link-input-url').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('links-add-btn').click();});
-document.getElementById('res-input-url').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('res-add-btn').click();});
 </script>
 </body>
 </html>
