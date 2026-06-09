@@ -188,7 +188,7 @@ const TG5_TEMPLATE = [
   [
     { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:40 },
     { slot:"am2", label:"P'Ed",           isMaths:false, isPEd:true },
-    { slot:"pm1", label:"Maths pt2a — EXAM 003A", isMaths:true, section:"pt2a", pEnd:42, isExam:true },
+    { slot:"pm1", label:"TDC Admin / Maths pt2a — EXAM 003A", isMaths:true, section:"pt2a", pEnd:41, isExam:true, single:true },
     { slot:"pm2", label:"Maths pt2a — EXAM 003A", isMaths:true, section:"pt2a", pEnd:43, isExam:true }
   ],
   // ── Day 27 ────────────────────────────────────────────────────────────────
