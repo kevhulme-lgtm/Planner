@@ -376,8 +376,8 @@ function render() {
 
       } else {
         // Non-maths cell
-        const isPEd = /p\s*ed/i.test(entry.label);
-        const isOtherExam = /exam/i.test(entry.label);
+        const isPEd = entry.isPEd || /p[’']?\s*ed/i.test(entry.label);
+        const isOtherExam = entry.isNonMathsExam || /exam/i.test(entry.label);
         if (isPEd) {
           cell.className = 'cell cell-ped';
           cell.innerHTML = '<div class="cell-ped-label">' + entry.label + '</div>';
@@ -439,7 +439,7 @@ function buildLegend() {
     item.innerHTML = '<div class="legend-dot" style="background:' + c.bg + '"></div><span>' + SEC_LABELS[k] + '</span>';
     leg.appendChild(item);
   });
-  [['#8b1a1a','Maths exam'],['#d4870a','P Ed'],['#1c2030','Other subject'],['#1a4a7a','Air Day']].forEach(([col, lbl]) => {
+  [['#8b1a1a','Maths exam'],['#8b2020','Non-maths exam'],['#d4870a',"P'Ed"],['#1c2030','Other subject'],['#1a4a7a','Air Day']].forEach(([col, lbl]) => {
     const item = document.createElement('div');
     item.className = 'legend-item';
     item.innerHTML = '<div class="legend-dot" style="background:' + col + ';border:1px solid #3a4258"></div><span>' + lbl + '</span>';
