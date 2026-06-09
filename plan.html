@@ -33,7 +33,7 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 .slot-label{background:#1e2336;padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:2px solid #3a4258;}
 .slot-name{font-size:0.68rem;font-family:'DM Mono',monospace;color:#c0c8d8;font-weight:500;}
 .slot-time{font-size:0.6rem;color:#6a75a0;margin-top:2px;}
-.cell{min-height:80px;padding:7px;transition:all 0.1s;position:relative;}
+.cell{min-height:52px;padding:5px 7px;transition:all 0.1s;position:relative;}
 .cell-empty{background:#12151f;}
 .cell-empty.drag-over{outline:2px dashed #7ecfaa;outline-offset:-2px;background:#1a2030;}
 .cell-other{background:#1c2030;display:flex;align-items:center;justify-content:center;}
@@ -217,7 +217,17 @@ const PERIOD_KLP_MAP = {
 const SECTION_BOOK_FILE = {pt1:'books/pt1.html', pt2a:'books/book1.html', pt2b:'books/book2.html', pt2c:'books/book3.html'};
 const SEC_COLORS = {pt1:{bg:"#1a6b4a",light:"#d4f0e4"}, pt2a:{bg:"#1a5276",light:"#d4e6f1"}, pt2b:{bg:"#6c3483",light:"#e8d5f5"}, pt2c:{bg:"#7d3c0a",light:"#fde8d0"}};
 const SEC_LABELS = {pt1:"Pt1 – Arithmetic", pt2a:"Pt2a – Algebra", pt2b:"Pt2b – Trig & Geometry", pt2c:"Pt2c – Calculus & Stats"};
-const SLOTS = [{id:"am1",label:"AM 1",time:"08:30–10:00"},{id:"am2",label:"AM 2",time:"10:30–12:00"},{id:"lunch",label:"Lunch",time:"13:00–13:30"},{id:"pm1",label:"PM 1",time:"13:30–15:00"},{id:"pm2",label:"PM 2",time:"15:30–17:00"}];
+const SLOTS = [
+  {id:"p1",label:"P1",time:"08:30–09:15"},
+  {id:"p2",label:"P2",time:"09:15–10:00"},
+  {id:"p3",label:"P3",time:"10:30–11:15"},
+  {id:"p4",label:"P4",time:"11:15–12:00"},
+  {id:"p5",label:"P5",time:"12:45–13:30"},
+  {id:"p6",label:"P6",time:"13:30–14:15"},
+  {id:"p7",label:"P7",time:"14:15–15:00"},
+  {id:"p8",label:"P8",time:"15:30–16:15"},
+  {id:"p9",label:"P9",time:"16:15–17:00"},
+];
 const DAYS = ["Mon","Tue","Wed","Thu","Fri"];
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -225,13 +235,9 @@ let tData = {}, negatedDateMap = {}, weekIdx = 0, dragKey = null, cutKey = null,
 let _currentNoteKey = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function klpLabel(section, pEnd, single) {
+function klpLabel(section, pEnd) {
   const map = KLP_MAPS[section];
-  if (!map) return 'P' + pEnd;
-  if (single) return map[pEnd] || ('P' + pEnd);
-  const a = map[pEnd-1] || ('P' + (pEnd-1));
-  const b = map[pEnd]   || ('P' + pEnd);
-  return a === b ? a : a + ' / ' + b;
+  return (map && map[pEnd]) || ('P' + pEnd);
 }
 function fmtDate(s) {
   return new Date(s + 'T12:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'short'});
@@ -239,11 +245,8 @@ function fmtDate(s) {
 function klpRefsForEntry(entry) {
   const map = PERIOD_KLP_MAP[entry.section];
   if (!map) return [];
-  const refs = [];
-  const add = r => { if (r && !refs.includes(r)) refs.push(r); };
-  if (entry.single) { add(map[entry.pEnd]); }
-  else { add(map[entry.pEnd-1]); add(map[entry.pEnd]); }
-  return refs;
+  const ref = map[entry.pEnd];
+  return ref ? [ref] : [];
 }
 
 // ── Weeks ─────────────────────────────────────────────────────────────────────
@@ -290,10 +293,9 @@ function render() {
   document.getElementById('btnPrev').disabled = weekIdx === 0;
   document.getElementById('btnNext').disabled = weekIdx === WEEKS.length - 1;
 
-  const showSlots = SLOTS.filter(s => {
-    if (s.id === 'lunch') return week.days.some(d => tData[d + '_lunch']);
-    return true;
-  });
+  const showSlots = SLOTS.filter(s =>
+    s.id !== 'p5' || week.days.some(d => tData[d + '_p5'])
+  );
 
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
@@ -324,7 +326,7 @@ function render() {
 
       // Air day
       if (date in negatedDateMap) {
-        if (slot.id === 'am1') {
+        if (slot.id === 'p1') {
           cell.className = 'cell cell-airday';
           cell.innerHTML = '<div class="cell-airday-label">&#x2708; ' + (negatedDateMap[date] || 'Off') + '</div>';
         } else {
@@ -346,8 +348,8 @@ function render() {
       } else if (entry.isMaths) {
         // Maths cell
         const sc = SEC_COLORS[entry.section] || SEC_COLORS.pt1;
-        const lbl2 = entry.override || (entry.isExam ? entry.label : klpLabel(entry.section, entry.pEnd, entry.single));
-        const pLbl = entry.single ? ('P' + entry.pEnd) : ('P' + (entry.pEnd-1) + '–P' + entry.pEnd);
+        const lbl2 = entry.override || (entry.isExam ? entry.label : klpLabel(entry.section, entry.pEnd));
+        const pLbl = 'P' + entry.pEnd;
         const isDone = !!entry.done;
         const isCut = key === cutKey;
 

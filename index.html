@@ -96,10 +96,15 @@ header{margin-bottom:32px;}
     <div class="field">
       <label>Start slot <span style="font-size:0.72rem;color:#4a5570">(if Intro to APO starts late, everything shifts right from here)</span></label>
       <select id="f-start-slot">
-        <option value="am1">AM 1 (08:30) — normal start</option>
-        <option value="am2">AM 2 (10:30) — skip AM 1</option>
-        <option value="pm1">PM 1 (13:30) — skip AM 1 & AM 2</option>
-        <option value="pm2">PM 2 (15:30) — afternoon only</option>
+        <option value="p1">P1 (08:30) — normal start</option>
+        <option value="p2">P2 (09:15)</option>
+        <option value="p3">P3 (10:30) — skip morning session 1</option>
+        <option value="p4">P4 (11:15)</option>
+        <option value="p5">P5 (12:45) — skip whole morning</option>
+        <option value="p6">P6 (13:30) — afternoon only</option>
+        <option value="p7">P7 (14:15)</option>
+        <option value="p8">P8 (15:30) — late afternoon only</option>
+        <option value="p9">P9 (16:15)</option>
       </select>
     </div>
     <div class="field">
@@ -233,7 +238,7 @@ function generateWorkingDays(startDate, count, negated) {
   return days;
 }
 
-const SLOT_ORDER = ['am1', 'am2', 'pm1', 'pm2']; // teachable slots in order
+const SLOT_ORDER = ['p1','p2','p3','p4','p5','p6','p7','p8','p9'];
 function buildTimetableData(template, startDate, negated, startSlot) {
   // Flatten template to an ordered sequence of slot contents
   const contents = [];
@@ -269,7 +274,7 @@ document.getElementById('btn-new-plan').addEventListener('click', () => {
   renderNegated();
   document.getElementById('f-course').value = '';
   document.getElementById('f-start').value = '';
-  document.getElementById('f-start-slot').value = 'am1';
+  document.getElementById('f-start-slot').value = 'p1';
   document.getElementById('modal-status').textContent = '';
   document.getElementById('modal-overlay').classList.add('open');
 });
