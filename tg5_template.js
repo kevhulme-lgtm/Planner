@@ -235,7 +235,7 @@ const TG5_TEMPLATE = [
   ],
   // ── Day 33 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2b — P23 + EXAM 003B start", isMaths:true, section:"pt2b", pEnd:24, isExam:true },
+    { slot:"am1", label:"Maths pt2b — P23 / EXAM 003B", isMaths:true, section:"pt2b", pEnd:24, isExam:true },
     { slot:"am2", label:"Maths pt2b — EXAM 003B", isMaths:true, section:"pt2b", pEnd:26, isExam:true },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
@@ -306,8 +306,8 @@ const TG5_TEMPLATE = [
   ],
   // ── Day 43 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"TDC Admin / Maths pt2c EXAM 003C", isMaths:true, section:"pt2c", pEnd:31, isExam:true },
-    { slot:"am2", label:"Maths pt2c — EXAM 003C", isMaths:true, section:"pt2c", pEnd:31, isExam:true },
+    { slot:"am1", label:"TDC Admin / Maths pt2c — EXAM 003C", isMaths:true, section:"pt2c", pEnd:31, isExam:true, single:true },
+    { slot:"am2", label:"Maths pt2c — EXAM 003C", isMaths:true, section:"pt2c", pEnd:33, isExam:true },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ]
