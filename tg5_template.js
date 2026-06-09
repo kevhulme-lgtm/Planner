@@ -1,160 +1,160 @@
-// TG5 session template — Air Days excluded (entered as negated days at plan creation)
-// Day 1 = Intro to APO (AEAF brief removed)
-// Cell types for non-maths cells:
+// TG5 session template — 43 teaching days
+// Air Days are NOT in the template — enter them as negated days when creating a plan
+// Cell type flags:
 //   isPEd:true          → muted brown
 //   isNonMathsExam:true → muted red
 const TG5_TEMPLATE = [
-  // ── Day 1 (Tue 09 Jun) ────────────────────────────────────────────────────
+  // ── Day 1 ─────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Intro to APO",   isMaths:false },
     { slot:"am2", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:2 },
     { slot:"pm1", label:"Eng Drawing",    isMaths:false },
     { slot:"pm2", label:"Eng Drawing",    isMaths:false }
   ],
-  // ── Day 2 (Wed 10 Jun) ────────────────────────────────────────────────────
+  // ── Day 2 ─────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:4 },
     { slot:"am2", label:"P'Ed",           isMaths:false, isPEd:true },
     { slot:"pm1", label:"Eng Drawing",    isMaths:false },
     { slot:"pm2", label:"Eng Drawing",    isMaths:false }
   ],
-  // ── Day 3 (Tue 16 Jun — after air days 11,12,15 Jun) ──────────────────────
+  // ── Day 3 ─────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Beliefs & Values", isMaths:false },
     { slot:"am2", label:"Eng Drawing",    isMaths:false },
     { slot:"pm1", label:"Eng Drawing",    isMaths:false },
     { slot:"pm2", label:"Eng Drawing",    isMaths:false }
   ],
-  // ── Day 4 (Wed 17 Jun) ───────────────────────────────────────────────────
+  // ── Day 4 ─────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Eng Drawing",    isMaths:false },
     { slot:"am2", label:"Eng Drawing",    isMaths:false },
     { slot:"pm1", label:"P'Ed Cancelled", isMaths:false, isPEd:true },
     { slot:"pm2", label:"Eng Drawing / Courageous Conv.", isMaths:false }
   ],
-  // ── Day 5 (Thu 18 Jun) ───────────────────────────────────────────────────
+  // ── Day 5 ─────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Eng Drawing Exam", isMaths:false, isNonMathsExam:true },
     { slot:"am2", label:"Eng Drawing Exam", isMaths:false, isNonMathsExam:true },
     { slot:"pm1", label:"Eng Drawing Exam", isMaths:false, isNonMathsExam:true },
     { slot:"pm2", label:"Eng Drawing Exam", isMaths:false, isNonMathsExam:true }
   ],
-  // ── Day 6 (Fri 19 Jun) ───────────────────────────────────────────────────
+  // ── Day 6 ─────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:6 },
     { slot:"am2", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:8 },
     { slot:"pm1", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:10 },
     { slot:"pm2", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:12 }
   ],
-  // ── Day 7 (Mon 22 Jun) ───────────────────────────────────────────────────
+  // ── Day 7 ─────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:14 },
     { slot:"am2", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:16 },
     { slot:"pm1", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:18 },
     { slot:"pm2", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:20 }
   ],
-  // ── Day 8 (Tue 23 Jun) ───────────────────────────────────────────────────
+  // ── Day 8 ─────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"CAD",            isMaths:false },
-    { slot:"am2", label:"CAD",            isMaths:false },
-    { slot:"pm1", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:22 },
-    { slot:"pm2", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:24 }
+    { slot:"am1", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:22 },
+    { slot:"am2", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:24 },
+    { slot:"pm1", label:"CAD",            isMaths:false },
+    { slot:"pm2", label:"CAD",            isMaths:false }
   ],
-  // ── Day 9 (Wed 24 Jun) ───────────────────────────────────────────────────
+  // ── Day 9 ─────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"CAD",            isMaths:false },
     { slot:"am2", label:"P'Ed",           isMaths:false, isPEd:true },
     { slot:"pm1", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:26 },
     { slot:"pm2", label:"Maths pt1",      isMaths:true, section:"pt1", pEnd:28 }
   ],
-  // ── Day 10 (Thu 25 Jun) ──────────────────────────────────────────────────
+  // ── Day 10 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"CAD",            isMaths:false },
+    { slot:"am1", label:"Maths pt1 — EXAM", isMaths:true, section:"pt1", pEnd:30, isExam:true },
     { slot:"am2", label:"CAD",            isMaths:false },
     { slot:"lunch", label:"PowerBI — Eng Drawing & CAD", isMaths:false },
-    { slot:"pm1", label:"Maths pt1 — EXAM", isMaths:true, section:"pt1", pEnd:30, isExam:true },
-    { slot:"pm2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:2 }
+    { slot:"pm1", label:"CAD",            isMaths:false },
+    { slot:"pm2", label:"CAD Exam",       isMaths:false, isNonMathsExam:true }
   ],
-  // ── Day 11 (Fri 26 Jun) ──────────────────────────────────────────────────
+  // ── Day 11 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"CAD Exam",       isMaths:false, isNonMathsExam:true },
     { slot:"am2", label:"CAD Exam",       isMaths:false, isNonMathsExam:true },
-    { slot:"pm1", label:"CAD Exam",       isMaths:false, isNonMathsExam:true },
+    { slot:"pm1", label:"Maths pt1 — EXAM", isMaths:true, section:"pt1", pEnd:30, isExam:true },
     { slot:"pm2", label:"P'Ed",           isMaths:false, isPEd:true }
   ],
-  // ── Day 12 (Mon 29 Jun) ──────────────────────────────────────────────────
+  // ── Day 12 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:4 },
+    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:2 },
     { slot:"am2", label:"P'Ed",           isMaths:false, isPEd:true },
     { slot:"lunch", label:"F2F — Eng Drawing & CAD", isMaths:false },
     { slot:"pm1", label:"Tech HS",        isMaths:false },
     { slot:"pm2", label:"Tech HS",        isMaths:false }
   ],
-  // ── Day 13 (Tue 30 Jun) ──────────────────────────────────────────────────
+  // ── Day 13 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:6 },
-    { slot:"am2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:8 },
+    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:4 },
+    { slot:"am2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:6 },
     { slot:"pm1", label:"Tech HS",        isMaths:false },
     { slot:"pm2", label:"Tech HS",        isMaths:false }
   ],
-  // ── Day 14 (Wed 01 Jul) ──────────────────────────────────────────────────
+  // ── Day 14 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:10 },
-    { slot:"am2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:12 },
+    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:8 },
+    { slot:"am2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:10 },
     { slot:"pm1", label:"Tech HS",        isMaths:false },
     { slot:"pm2", label:"Tech HS",        isMaths:false }
   ],
-  // ── Day 15 (Thu 02 Jul) ──────────────────────────────────────────────────
+  // ── Day 15 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:14 },
+    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:12 },
     { slot:"am2", label:"Beliefs & Values", isMaths:false },
     { slot:"pm1", label:"Tech HS",        isMaths:false },
     { slot:"pm2", label:"Tech HS",        isMaths:false }
   ],
-  // ── Day 16 (Fri 03 Jul) ──────────────────────────────────────────────────
+  // ── Day 16 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Tech HS",        isMaths:false },
     { slot:"am2", label:"Tech HS",        isMaths:false },
-    { slot:"pm1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:16 },
-    { slot:"pm2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:18 }
+    { slot:"pm1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:14 },
+    { slot:"pm2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:16 }
   ],
-  // ── Day 17 (Mon 06 Jul) ──────────────────────────────────────────────────
+  // ── Day 17 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Tech HS",        isMaths:false },
     { slot:"am2", label:"Tech HS",        isMaths:false },
-    { slot:"pm1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:20 },
-    { slot:"pm2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:22 }
+    { slot:"pm1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:18 },
+    { slot:"pm2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:20 }
   ],
-  // ── Day 18 (Tue 07 Jul) ──────────────────────────────────────────────────
+  // ── Day 18 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Courageous Conv. / Tech HS", isMaths:false },
     { slot:"am2", label:"Tech HS",        isMaths:false },
     { slot:"lunch", label:"PowerBI — Tech HS", isMaths:false },
-    { slot:"pm1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:24 },
-    { slot:"pm2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:26 }
+    { slot:"pm1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:22 },
+    { slot:"pm2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:24 }
   ],
-  // ── Day 19 (Wed 08 Jul) ──────────────────────────────────────────────────
+  // ── Day 19 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"P'Ed",           isMaths:false, isPEd:true },
     { slot:"am2", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
     { slot:"pm1", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
     { slot:"pm2", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true }
   ],
-  // ── Day 20 (Thu 09 Jul) ──────────────────────────────────────────────────
+  // ── Day 20 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
     { slot:"am2", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
     { slot:"pm1", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
     { slot:"pm2", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true }
   ],
-  // ── Day 21 (Fri 10 Jul) ──────────────────────────────────────────────────
+  // ── Day 21 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
     { slot:"am2", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
     { slot:"pm1", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
     { slot:"pm2", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true }
   ],
-  // ── Day 22 (Mon 13 Jul) ──────────────────────────────────────────────────
+  // ── Day 22 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
     { slot:"am2", label:"Tech HS Exam",   isMaths:false, isNonMathsExam:true },
@@ -162,134 +162,134 @@ const TG5_TEMPLATE = [
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 23 (Tue 14 Jul) ──────────────────────────────────────────────────
+  // ── Day 23 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:28 },
-    { slot:"am2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:30 },
+    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:26 },
+    { slot:"am2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:28 },
     { slot:"lunch", label:"F2F — Tech HS", isMaths:false },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 24 (Wed 15 Jul) ──────────────────────────────────────────────────
+  // ── Day 24 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:32 },
+    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:30 },
     { slot:"am2", label:"Beliefs & Values", isMaths:false },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 25 (Thu 16 Jul) ──────────────────────────────────────────────────
+  // ── Day 25 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:34 },
-    { slot:"am2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:36 },
-    { slot:"pm1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:38 },
+    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:32 },
+    { slot:"am2", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:34 },
+    { slot:"pm1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:36 },
     { slot:"pm2", label:"P'Ed",           isMaths:false, isPEd:true }
   ],
-  // ── Day 26 (Fri 17 Jul) ──────────────────────────────────────────────────
+  // ── Day 26 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:40 },
+    { slot:"am1", label:"Maths pt2a",     isMaths:true, section:"pt2a", pEnd:38 },
     { slot:"am2", label:"P'Ed",           isMaths:false, isPEd:true },
-    { slot:"pm1", label:"TDC Admin",      isMaths:false },
+    { slot:"pm1", label:"Maths pt2a — EXAM 003A", isMaths:true, section:"pt2a", pEnd:40, isExam:true },
     { slot:"pm2", label:"Maths pt2a — EXAM 003A", isMaths:true, section:"pt2a", pEnd:41, isExam:true }
   ],
-  // ── Day 27 (Mon 20 Jul) ──────────────────────────────────────────────────
+  // ── Day 27 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Elec Science",   isMaths:false },
     { slot:"am2", label:"Elec Science",   isMaths:false },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:2 }
   ],
-  // ── Day 28 (Tue 21 Jul) ──────────────────────────────────────────────────
+  // ── Day 28 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Elec Science",   isMaths:false },
     { slot:"am2", label:"Elec Science",   isMaths:false },
     { slot:"pm1", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:4 },
     { slot:"pm2", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:6 }
   ],
-  // ── Day 29 (Wed 22 Jul) ──────────────────────────────────────────────────
+  // ── Day 29 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Elec Science",   isMaths:false },
     { slot:"am2", label:"P'Ed",           isMaths:false, isPEd:true },
     { slot:"pm1", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:8 },
     { slot:"pm2", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:10 }
   ],
-  // ── Day 30 (Thu 23 Jul) ──────────────────────────────────────────────────
+  // ── Day 30 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Elec Science",   isMaths:false },
     { slot:"am2", label:"Elec Science",   isMaths:false },
     { slot:"pm1", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:12 },
     { slot:"pm2", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:14 }
   ],
-  // ── Day 31 (Fri 24 Jul) ──────────────────────────────────────────────────
+  // ── Day 31 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Elec Science",   isMaths:false },
     { slot:"am2", label:"Elec Science",   isMaths:false },
     { slot:"pm1", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:16 },
     { slot:"pm2", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:18 }
   ],
-  // ── Day 32 (Mon 27 Jul) ──────────────────────────────────────────────────
+  // ── Day 32 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:20 },
     { slot:"am2", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:22 },
     { slot:"pm1", label:"P'Ed",           isMaths:false, isPEd:true },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 33 (Tue 28 Jul) ──────────────────────────────────────────────────
+  // ── Day 33 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"Maths pt2b",     isMaths:true, section:"pt2b", pEnd:23, single:true },
-    { slot:"am2", label:"Maths pt2b — EXAM 003B", isMaths:true, section:"pt2b", pEnd:24, isExam:true },
+    { slot:"am1", label:"Maths pt2b — P23 + EXAM 003B start", isMaths:true, section:"pt2b", pEnd:24, isExam:true },
+    { slot:"am2", label:"Maths pt2b — EXAM 003B", isMaths:true, section:"pt2b", pEnd:26, isExam:true },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 34 (Wed 29 Jul) ──────────────────────────────────────────────────
+  // ── Day 34 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:2 },
     { slot:"am2", label:"P'Ed — Fit for life", isMaths:false, isPEd:true },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 35 (Thu 30 Jul) ──────────────────────────────────────────────────
+  // ── Day 35 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:4 },
     { slot:"am2", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:6 },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 36 (Fri 31 Jul) ──────────────────────────────────────────────────
+  // ── Day 36 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:8 },
     { slot:"am2", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:10 },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 37 (Mon 03 Aug) ──────────────────────────────────────────────────
+  // ── Day 37 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:12 },
     { slot:"am2", label:"P'Ed",           isMaths:false, isPEd:true },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 38 (Tue 04 Aug) ──────────────────────────────────────────────────
+  // ── Day 38 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Elec Science",   isMaths:false },
     { slot:"am2", label:"Elec Science",   isMaths:false },
     { slot:"pm1", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:14 },
     { slot:"pm2", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:16 }
   ],
-  // ── Day 39 (Wed 05 Aug) ──────────────────────────────────────────────────
+  // ── Day 39 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Courageous Conv. / Elec Science", isMaths:false },
     { slot:"am2", label:"Elec Science",   isMaths:false },
     { slot:"pm1", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:18 },
     { slot:"pm2", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:20 }
   ],
-  // ── Day 40 (Thu 06 Aug) ──────────────────────────────────────────────────
+  // ── Day 40 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"TDC Admin / Elec Science", isMaths:false },
     { slot:"am2", label:"Elec Science",   isMaths:false },
     { slot:"pm1", label:"P'Ed",           isMaths:false, isPEd:true },
     { slot:"pm2", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:22 }
   ],
-  // ── Day 41 (Fri 07 Aug) ──────────────────────────────────────────────────
+  // ── Day 41 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Elec Science",   isMaths:false },
     { slot:"am2", label:"Elec Science",   isMaths:false },
@@ -297,40 +297,18 @@ const TG5_TEMPLATE = [
     { slot:"pm1", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:24 },
     { slot:"pm2", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:26 }
   ],
-  // ── Day 42 (Mon 10 Aug) ──────────────────────────────────────────────────
+  // ── Day 42 ────────────────────────────────────────────────────────────────
   [
     { slot:"am1", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:28 },
     { slot:"am2", label:"Maths pt2c",     isMaths:true, section:"pt2c", pEnd:30 },
     { slot:"pm1", label:"P'Ed",           isMaths:false, isPEd:true },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
   ],
-  // ── Day 43 (Tue 11 Aug) ──────────────────────────────────────────────────
+  // ── Day 43 ────────────────────────────────────────────────────────────────
   [
-    { slot:"am1", label:"TDC Admin",      isMaths:false },
+    { slot:"am1", label:"TDC Admin / Maths pt2c EXAM 003C", isMaths:true, section:"pt2c", pEnd:31, isExam:true },
     { slot:"am2", label:"Maths pt2c — EXAM 003C", isMaths:true, section:"pt2c", pEnd:31, isExam:true },
     { slot:"pm1", label:"Elec Science",   isMaths:false },
     { slot:"pm2", label:"Elec Science",   isMaths:false }
-  ],
-  // ── Day 44 (Wed 12 Aug) ──────────────────────────────────────────────────
-  [
-    { slot:"am1", label:"Elec Science",   isMaths:false },
-    { slot:"am2", label:"Elec Science Revision", isMaths:false },
-    { slot:"pm1", label:"Elec Science Revision", isMaths:false },
-    { slot:"pm2", label:"Beliefs & Values", isMaths:false }
-  ],
-  // ── Day 45 (Thu 13 Aug) ──────────────────────────────────────────────────
-  [
-    { slot:"am1", label:"Elec Science Exam", isMaths:false, isNonMathsExam:true },
-    { slot:"am2", label:"Elec Science Exam", isMaths:false, isNonMathsExam:true },
-    { slot:"lunch", label:"RT Survey",    isMaths:false },
-    { slot:"pm1", label:"P'Ed",           isMaths:false, isPEd:true },
-    { slot:"pm2", label:"TDC Admin / EoC", isMaths:false }
-  ],
-  // ── Day 46 (Fri 14 Aug) ──────────────────────────────────────────────────
-  [
-    { slot:"am1", label:"APO EoC Feedback", isMaths:false },
-    { slot:"am2", label:"TDC Admin / EoC", isMaths:false },
-    { slot:"lunch", label:"F2F — Maths & Elec Science", isMaths:false },
-    { slot:"pm1", label:"MAD Return",     isMaths:false }
   ]
 ];
