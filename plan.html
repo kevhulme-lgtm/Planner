@@ -35,6 +35,7 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 .slot-time{font-size:0.6rem;color:#6a75a0;margin-top:2px;}
 .cell{min-height:80px;padding:7px;transition:all 0.1s;position:relative;}
 .cell-empty{background:#12151f;}
+.cell-empty.drag-over{outline:2px dashed #7ecfaa;outline-offset:-2px;background:#1a2030;}
 .cell-other{background:#1c2030;display:flex;align-items:center;justify-content:center;}
 .cell-other-label{font-size:0.72rem;color:#8a95b8;text-align:center;line-height:1.4;padding:2px;font-weight:500;}
 .cell-ped{background:#2a1f0a;display:flex;align-items:center;justify-content:center;border-left:4px solid #d4870a;}
@@ -44,17 +45,16 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 .cell-maths{cursor:grab;display:flex;flex-direction:column;gap:3px;}
 .cell-maths:active{cursor:grabbing;opacity:0.8;}
 .cell-maths.drag-over{outline:2px dashed #7ecfaa;outline-offset:-2px;}
-.cell-empty.drag-over{outline:2px dashed #7ecfaa;outline-offset:-2px;background:#1a2030;}
+.cell-maths.done{opacity:0.55;}
+.cell-maths.done .cell-main{text-decoration:line-through;color:#6a7a7a;}
+.cell-maths.cut-mode{outline:2px dashed #f0a830;outline-offset:-2px;animation:pulse-cut 1s infinite;}
+@keyframes pulse-cut{0%,100%{outline-color:#f0a830;}50%{outline-color:#7ecfaa;}}
 .cell-tag{font-size:0.58rem;font-family:'DM Mono',monospace;color:white;padding:2px 6px;border-radius:3px;font-weight:600;letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cell-main{font-size:0.75rem;color:#1a1a1a;font-weight:600;line-height:1.3;flex:1;}
 .cell-period{font-size:0.62rem;font-family:'DM Mono',monospace;color:#4a5570;margin-top:auto;font-weight:500;}
 .cell-main-exam{font-size:0.75rem;color:#fff;font-weight:600;line-height:1.3;flex:1;}
 .cell-period-exam{font-size:0.62rem;font-family:'DM Mono',monospace;color:#ffaaaa;margin-top:auto;font-weight:500;}
-.cell-maths.done{opacity:0.55;}
-.cell-maths.done .cell-main{text-decoration:line-through;color:#6a7a7a;}
 .cell-done-badge{position:absolute;top:4px;right:4px;font-size:0.65rem;background:#1a6b4a;color:#7ecfaa;border-radius:3px;padding:1px 5px;font-family:'DM Mono',monospace;font-weight:600;}
-.cell-cut{outline:2px dashed #f0a830 !important;outline-offset:-2px;animation:pulse-cut 1s infinite;}
-@keyframes pulse-cut{0%,100%{outline-color:#f0a830;}50%{outline-color:#7ecfaa;}}
 .cell-airday{background:#0e1a2e;display:flex;align-items:center;justify-content:center;border-left:4px solid #1a4a7a;}
 .cell-airday-label{font-size:0.72rem;color:#4a8abf;text-align:center;line-height:1.4;padding:2px;font-weight:600;letter-spacing:0.04em;}
 #loading-state{color:#4a5570;font-family:'DM Mono',monospace;font-size:0.85rem;padding:40px 0;}
@@ -63,27 +63,35 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 #panel-overlay.open{display:block;}
 #lesson-panel{position:fixed;top:0;right:-740px;width:min(740px,100vw);height:100vh;background:#12151f;border-left:2px solid #3a4258;display:flex;flex-direction:column;z-index:101;transition:right 0.25s ease;}
 #lesson-panel.open{right:0;}
-#panel-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#181c28;border-bottom:1px solid #3a4258;flex-shrink:0;flex-wrap:wrap;}
+#panel-header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#181c28;border-bottom:1px solid #3a4258;flex-shrink:0;flex-wrap:wrap;}
 #panel-klp-ref{font-family:'DM Mono',monospace;font-size:0.7rem;color:#7ecfaa;white-space:nowrap;}
-#panel-klp-title{font-size:0.88rem;font-weight:600;color:#e8eaf0;flex:1;min-width:0;}
+#panel-klp-title{font-size:0.88rem;font-weight:600;color:#e8eaf0;flex:1;min-width:120px;}
 #panel-period{font-family:'DM Mono',monospace;font-size:0.7rem;color:#8a95a8;white-space:nowrap;}
+.panel-hdr-btn{background:none;border:1px solid #3a4258;color:#8a95a8;font-size:0.75rem;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;flex-shrink:0;white-space:nowrap;}
+.panel-hdr-btn:hover{border-color:#7ecfaa;color:#7ecfaa;}
+.panel-hdr-btn.active{border-color:#7ecfaa;color:#7ecfaa;}
 #panel-close{background:none;border:none;color:#8a95a8;font-size:1.3rem;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0;}
 #panel-close:hover{color:#e8eaf0;}
+#panel-override-row{display:flex;align-items:center;gap:6px;padding:7px 14px;background:#12151f;border-bottom:1px solid #3a4258;flex-shrink:0;}
+#panel-override-input{flex:1;background:#1c2030;border:1px solid #3a4258;border-radius:5px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:5px 10px;}
+#panel-override-input:focus{outline:none;border-color:#7ecfaa;}
 #panel-tabs{display:flex;align-items:stretch;background:#181c28;border-bottom:1px solid #3a4258;flex-shrink:0;}
-.panel-tab{padding:8px 16px;font-size:0.78rem;cursor:pointer;color:#8a95a8;border-bottom:2px solid transparent;font-weight:500;white-space:nowrap;}
+.panel-tab{padding:8px 14px;font-size:0.78rem;cursor:pointer;color:#8a95a8;border-bottom:2px solid transparent;font-weight:500;white-space:nowrap;}
 .panel-tab.active{color:#7ecfaa;border-bottom-color:#7ecfaa;}
 #panel-book-link{margin-left:auto;align-self:center;padding:0 14px;font-size:0.73rem;color:#5a8fcc;text-decoration:none;}
 #panel-book-link:hover{color:#7ecfaa;}
 #panel-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+#panel-book-frame{width:100%;flex:1;border:none;display:none;background:#fff;}
+#panel-book-frame.active{display:block;}
+#panel-notes-tab,#panel-links-tab{display:none;flex-direction:column;flex:1;padding:14px;gap:8px;overflow-y:auto;}
+#panel-notes-tab.active,#panel-links-tab.active{display:flex;}
 #panel-lp-tab{display:none;flex-direction:column;flex:1;overflow:hidden;}
 #panel-lp-tab.active{display:flex;}
 #panel-lp-set-row{display:flex;gap:6px;padding:10px 14px;background:#181c28;border-bottom:1px solid #3a4258;flex-shrink:0;align-items:center;}
-#panel-lp-set-row input{flex:1;background:#1c2030;border:1px solid #3a4258;border-radius:5px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:5px 10px;}
-#panel-lp-set-row input:focus{outline:none;border-color:#7ecfaa;}
-#panel-book-frame,#panel-lp-frame{width:100%;flex:1;border:none;display:none;background:#fff;}
-#panel-book-frame.active,#panel-lp-frame.active{display:block;}
-#panel-notes-tab,#panel-links-tab{display:none;flex-direction:column;flex:1;padding:14px;gap:8px;overflow-y:auto;}
-#panel-notes-tab.active,#panel-links-tab.active{display:flex;}
+#lp-url-input{flex:1;background:#1c2030;border:1px solid #3a4258;border-radius:5px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:5px 10px;}
+#lp-url-input:focus{outline:none;border-color:#7ecfaa;}
+#panel-lp-frame{width:100%;flex:1;border:none;display:none;background:#fff;}
+#panel-lp-frame.active{display:block;}
 #panel-notes-label{font-size:0.72rem;color:#8a95a8;font-family:'DM Mono',monospace;}
 #panel-notes{flex:1;background:#1c2030;border:1px solid #3a4258;border-radius:6px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.87rem;padding:12px;resize:none;line-height:1.65;min-height:120px;}
 #panel-notes:focus{outline:none;border-color:#7ecfaa;}
@@ -106,9 +114,7 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 .btn-add{background:#1a5276;border:none;color:#fff;padding:7px 16px;border-radius:5px;cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;}
 .btn-add:hover{background:#1f6694;}
 .empty-msg{font-size:0.8rem;color:#4a5570;text-align:center;padding:20px 0;}
-.resource-item{background:#1c2030;border:1px solid #3a4258;border-radius:6px;overflow:hidden;flex-shrink:0;}
-.resource-item-header{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#181c28;border-bottom:1px solid #3a4258;}
-.resource-item-label{flex:1;font-size:0.8rem;color:#e8eaf0;font-weight:500;}
+.resource-item{background:#1c2030;border:1px solid #3a4258;border-radius:6px;overflow:hidden;flex-shrink:0;margin-top:4px;}
 .resource-embed{width:100%;border:none;display:block;}
 .resource-embed-img{width:100%;max-height:400px;object-fit:contain;display:block;background:#0f1117;}
 .resource-no-embed{padding:12px;font-size:0.78rem;color:#8a95a8;}
@@ -116,7 +122,6 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 </style>
 </head>
 <body>
-
 <a class="back-link" href="index.html">&#x2190; All plans</a>
 <h1 id="page-title">Loading&#x2026;</h1>
 <p class="subtitle" id="page-subtitle"></p>
@@ -140,14 +145,14 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
     <span id="panel-klp-ref"></span>
     <span id="panel-klp-title"></span>
     <span id="panel-period"></span>
-    <button id="panel-done-btn" title="Toggle done" style="background:none;border:1px solid #3a4258;color:#8a95a8;font-size:0.75rem;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;flex-shrink:0;">✓ Done</button>
-    <button id="panel-cut-btn" title="Move to another slot" style="background:none;border:1px solid #3a4258;color:#8a95a8;font-size:0.75rem;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;flex-shrink:0;">✂ Move</button>
-    <button id="panel-close" title="Close">&#x2715;</button>
+    <button class="panel-hdr-btn" id="panel-done-btn">&#x2713; Done</button>
+    <button class="panel-hdr-btn" id="panel-cut-btn">&#x2702; Move</button>
+    <button id="panel-close">&#x2715;</button>
   </div>
-  <div id="panel-override-row" style="display:flex;align-items:center;gap:6px;padding:7px 14px;background:#12151f;border-bottom:1px solid #3a4258;flex-shrink:0;">
-    <input id="panel-override-input" type="text" placeholder="Override label for this slot only… (blank = use default)" style="flex:1;background:#1c2030;border:1px solid #3a4258;border-radius:5px;color:#e8eaf0;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:5px 10px;">
-    <button id="panel-override-save" style="background:#1a5276;border:none;color:#fff;padding:5px 14px;border-radius:5px;cursor:pointer;font-size:0.8rem;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">Set</button>
-    <button id="panel-override-clear" style="background:none;border:1px solid #3a4258;color:#8a95a8;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:0.8rem;font-family:'DM Sans',sans-serif;white-space:nowrap;">Clear</button>
+  <div id="panel-override-row">
+    <input id="panel-override-input" type="text" placeholder="Override label for this slot only (blank = use default)">
+    <button class="btn-add" id="panel-override-save" style="padding:5px 14px;">Set</button>
+    <button class="link-btn" id="panel-override-clear">Clear</button>
   </div>
   <div id="panel-tabs">
     <div class="panel-tab active" data-tab="book">&#x1F4D6; Book</div>
@@ -159,8 +164,8 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
   <div id="panel-body">
     <iframe id="panel-book-frame" class="active" sandbox="allow-same-origin allow-scripts"></iframe>
     <div id="panel-notes-tab">
-      <div id="panel-notes-label">Notes &#x2014; saved to Supabase (local backup always kept)</div>
-      <textarea id="panel-notes" placeholder="Teaching notes, student feedback, pace adjustments&#x2026;"></textarea>
+      <div id="panel-notes-label">Notes — shared across all intakes for this period</div>
+      <textarea id="panel-notes" placeholder="Teaching notes, student feedback, pace adjustments…"></textarea>
       <div class="notes-actions">
         <button class="btn-save" id="panel-save-btn">Save notes</button>
         <span class="tab-status" id="panel-save-status"></span>
@@ -174,14 +179,14 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
           <input id="link-input-url" type="url" placeholder="https://…" style="flex:1">
           <button class="btn-add" id="links-add-btn">Add link</button>
         </div>
-        <div style="font-size:0.7rem;color:#4a5570;font-family:'DM Mono',monospace;">Toggle 📌 Embed on any link to display it inline as a resource</div>
+        <div style="font-size:0.7rem;color:#4a5570;font-family:'DM Mono',monospace;">Toggle &#x1F4CC; Embed on any link to display it inline</div>
         <span class="tab-status" id="links-status"></span>
       </div>
     </div>
     <div id="panel-lp-tab">
       <div id="panel-lp-set-row">
         <input id="lp-url-input" type="url" placeholder="Lesson plan PDF URL…">
-        <button class="btn-add" id="lp-url-save" style="white-space:nowrap">Set PDF</button>
+        <button class="btn-add" id="lp-url-save">Set PDF</button>
         <button class="link-btn" id="lp-url-clear">Clear</button>
         <span class="tab-status" id="lp-status"></span>
       </div>
@@ -197,311 +202,543 @@ const _sb = supabase.createClient(
 );
 const planSlug = new URLSearchParams(window.location.search).get('plan');
 
-// KLP labels
-const PT1={1:"Diagnostic quiz / Decimal system / Estimation",2:"Standard operators",3:"Standard operators",4:"Directed numbers",5:"Fractions",6:"Operators on fractions",7:"Operators on decimals",8:"Operators on decimals",9:"Rounding / decimal types",10:"FDP conversion",11:"FDP conversion",12:"FDP conversion",13:"Percentage values",14:"Percentage values",15:"Arithmetic ratios",16:"Proportionality",17:"Proportionality",18:"HCF & LCM",19:"HCF & LCM",20:"BIDMAS",21:"BIDMAS",22:"BIDMAS",23:"BIDMAS",24:"BIDMAS",25:"SI units",26:"Indices & std form",27:"Indices & std form",28:"Probability",29:"Non-calc exam",30:"Non-calc exam"};
+// ── KLP data ─────────────────────────────────────────────────────────────────
+const PT1={1:"Diagnostic quiz / Decimal system",2:"Standard operators",3:"Standard operators",4:"Directed numbers",5:"Fractions",6:"Operators on fractions",7:"Operators on decimals",8:"Operators on decimals",9:"Rounding / decimal types",10:"FDP conversion",11:"FDP conversion",12:"FDP conversion",13:"Percentage values",14:"Percentage values",15:"Arithmetic ratios",16:"Proportionality",17:"Proportionality",18:"HCF & LCM",19:"HCF & LCM",20:"BIDMAS",21:"BIDMAS",22:"BIDMAS",23:"BIDMAS",24:"BIDMAS",25:"SI units",26:"Indices & std form",27:"Indices & std form",28:"Probability",29:"Non-calc exam",30:"Non-calc exam"};
 const PT2A={1:"Symbols & equations",2:"Symbols & eqns / Index laws",3:"Index laws",4:"Like/unlike terms",5:"Simplify like/unlike terms",6:"Simplify like/unlike terms",7:"Simplify brackets",8:"HCF & factorisation",9:"Quadratic factorisation",10:"Quadratic factorisation",11:"Algebraic operators",12:"Transposition intro",13:"Transposition intro",14:"Change of subject",15:"Change of subject",16:"Change of subject",17:"Change of subject",18:"Substitution",19:"Substitution",20:"Linear equations",21:"Linear equations",22:"Quadratic (factor)",23:"Quadratic (factor)",24:"Quadratic formula",25:"Quadratic formula",26:"Simultaneous eqns",27:"Simultaneous eqns",28:"Index/log conversion",29:"Index/log conversion",30:"Laws of logarithms",31:"Laws of logarithms",32:"Indicial equations",33:"Indicial equations",34:"Plotting graphs",35:"Plotting graphs",36:"Straight-line graphs",37:"Straight-line graphs",38:"Simultaneous (graph)",39:"Simultaneous (graph)",40:"Simultaneous (graph)",41:"EAL Exam 003A",42:"EAL Exam 003A",43:"EAL Exam 003A"};
 const PT2B={1:"Triangle properties",2:"Pythagoras theorem",3:"Pythagoras (calc)",4:"Trig ratios",5:"Trig ratios",6:"Trig functions",7:"Trig functions",8:"Inverse trig",9:"Inverse trig",10:"Trig identities",11:"Sine/cos graphs (CAST)",12:"Sine/cos graphs (CAST)",13:"Sine & cosine rules",14:"Sine & cosine rules",15:"Radians",16:"Circle properties",17:"Unit conversions",18:"Perimeter/area/vol",19:"Perimeter/area/vol",20:"Compound shapes",21:"2D to 3D prism",22:"Surface area & vol",23:"Surface area & vol",24:"EAL Exam 003B",25:"EAL Exam 003B",26:"EAL Exam 003B"};
 const PT2C={1:"Differentiation",2:"Differentiation",3:"Differentiation",4:"Differentiation",5:"Differentiation",6:"2nd derivatives",7:"2nd derivatives",8:"Displacement/vel/acc",9:"Displacement/vel/acc",10:"Differentiation notation",11:"Differentiation notation",12:"Integration intro",13:"Standard integrals",14:"Standard integrals",15:"Standard integrals",16:"Standard integrals",17:"Standard integrals",18:"Standard integrals",19:"Definite integrals",20:"Definite integrals",21:"Integration problems",22:"Integration problems",23:"Data types",24:"Statistical diagrams",25:"Statistical diagrams",26:"Mean/median/mode",27:"Grouped mean",28:"Variance & std dev",29:"Variance & std dev",30:"Population vs sample",31:"EAL Exam 003C",32:"EAL Exam 003C",33:"EAL Exam 003C"};
-const KLP_MAPS={pt1:PT1,pt2a:PT2A,pt2b:PT2B,pt2c:PT2C};
-function klpLabel(section,pEnd,single){const map=KLP_MAPS[section];if(!map)return 'P'+pEnd;if(single)return map[pEnd]||'P'+pEnd;const a=map[pEnd-1]||'P'+(pEnd-1),b=map[pEnd]||'P'+pEnd;return a===b?a:a+' / '+b;}
-const SEC_COLORS={pt1:{bg:"#1a6b4a",light:"#d4f0e4"},pt2a:{bg:"#1a5276",light:"#d4e6f1"},pt2b:{bg:"#6c3483",light:"#e8d5f5"},pt2c:{bg:"#7d3c0a",light:"#fde8d0"}};
-const SEC_LABELS={pt1:"Pt1 – Arithmetic",pt2a:"Pt2a – Algebra",pt2b:"Pt2b – Trig & Geometry",pt2c:"Pt2c – Calculus & Stats"};
-const SLOTS=[{id:"am1",label:"AM 1",time:"08:30–10:00"},{id:"am2",label:"AM 2",time:"10:30–12:00"},{id:"lunch",label:"Lunch",time:"13:00–13:30"},{id:"pm1",label:"PM 1",time:"13:30–15:00"},{id:"pm2",label:"PM 2",time:"15:30–17:00"}];
-const DAYS=["Mon","Tue","Wed","Thu","Fri"];
-const PERIOD_KLP_MAP={pt1:{1:'1.2.1.1.1',2:'1.2.1.1.4',3:'1.2.1.1.4',4:'1.2.1.1.5',5:'1.2.1.1.6',6:'1.2.1.1.7',7:'1.2.1.1.8',8:'1.2.1.1.8',9:'1.2.1.1.9',10:'1.2.1.1.11',11:'1.2.1.1.11',12:'1.2.1.1.11',13:'1.2.1.1.12',14:'1.2.1.1.12',15:'1.2.1.1.13',16:'1.2.1.1.14',17:'1.2.1.1.14',18:'1.2.1.1.15',19:'1.2.1.1.15',20:'1.2.1.1.16',21:'1.2.1.1.16',22:'1.2.1.1.16',23:'1.2.1.1.16',24:'1.2.1.1.16',25:'1.2.1.1.17',26:'1.2.1.1.18',27:'1.2.1.1.18',28:'1.2.1.2.1',29:'1.2.1.1.13',30:'1.2.1.1.13'},pt2a:{1:'1.2.2.1.1',2:'1.2.2.1.2',3:'1.2.2.1.2',4:'1.2.2.1.3',5:'1.2.2.1.4',6:'1.2.2.1.4',7:'1.2.2.1.5',8:'1.2.2.1.6',9:'1.2.2.1.7',10:'1.2.2.1.7',11:'1.2.2.1.8',12:'1.2.2.1.9',13:'1.2.2.1.9',14:'1.2.2.1.10',15:'1.2.2.1.10',16:'1.2.2.1.10',17:'1.2.2.1.10',18:'1.2.2.2.1',19:'1.2.2.2.1',20:'1.2.2.2.2',21:'1.2.2.2.2',22:'1.2.2.2.3',23:'1.2.2.2.3',24:'1.2.2.2.4',25:'1.2.2.2.4',26:'1.2.2.2.5',27:'1.2.2.2.5',28:'1.2.2.3.1',29:'1.2.2.3.1',30:'1.2.2.3.2',31:'1.2.2.3.2',32:'1.2.2.3.3',33:'1.2.2.3.3',34:'1.2.2.4.1',35:'1.2.2.4.1',36:'1.2.2.4.2',37:'1.2.2.4.2',38:'1.2.2.4.3',39:'1.2.2.4.3',40:'1.2.2.4.3',41:'1.2.2.5.1',42:'1.2.2.5.1',43:'1.2.2.5.1'},pt2b:{1:'1.2.2.6.1',2:'1.2.2.6.2',3:'1.2.2.6.3',4:'1.2.2.6.4',5:'1.2.2.6.4',6:'1.2.2.6.5',7:'1.2.2.6.5',8:'1.2.2.6.6',9:'1.2.2.6.6',10:'1.2.2.6.7',11:'1.2.2.6.8',12:'1.2.2.6.8',13:'1.2.2.6.9',14:'1.2.2.6.9',15:'1.2.2.6.10',16:'1.2.2.7.1',17:'1.2.2.7.2',18:'1.2.2.7.3',19:'1.2.2.7.3',20:'1.2.2.7.4',21:'1.2.2.7.5',22:'1.2.2.7.6',23:'1.2.2.7.6',24:'1.2.2.8.1',25:'1.2.2.8.1',26:'1.2.2.8.1'},pt2c:{1:'1.2.2.9.1',2:'1.2.2.9.1',3:'1.2.2.9.1',4:'1.2.2.9.1',5:'1.2.2.9.1',6:'1.2.2.9.2',7:'1.2.2.9.2',8:'1.2.2.9.3',9:'1.2.2.9.3',10:'1.2.2.9.4',11:'1.2.2.9.4',12:'1.2.2.10.1',13:'1.2.2.10.5',14:'1.2.2.10.5',15:'1.2.2.10.5',16:'1.2.2.10.5',17:'1.2.2.10.5',18:'1.2.2.10.5',19:'1.2.2.10.6',20:'1.2.2.10.6',21:'1.2.2.10.7',22:'1.2.2.10.7',23:'1.2.2.11.1',24:'1.2.2.11.3',25:'1.2.2.11.3',26:'1.2.2.12.1',27:'1.2.2.12.3',28:'1.2.2.12.4',29:'1.2.2.12.4',30:'1.2.2.12.5',31:'1.2.2.13.1',32:'1.2.2.13.1',33:'1.2.2.13.1'}};
-const KLP_REF_DESC={'1.2.1.1.1':'Diagnostic quiz / Decimal system / Estimation','1.2.1.1.4':'Standard operators','1.2.1.1.5':'Directed numbers','1.2.1.1.6':'Fractions','1.2.1.1.7':'Operators on fractions','1.2.1.1.8':'Operators on decimals','1.2.1.1.9':'Rounding / decimal types','1.2.1.1.11':'FDP conversion','1.2.1.1.12':'Percentage values','1.2.1.1.13':'Arithmetic ratios / Non-calc exam','1.2.1.1.14':'Proportionality','1.2.1.1.15':'HCF & LCM','1.2.1.1.16':'BIDMAS','1.2.1.1.17':'SI units','1.2.1.1.18':'Indices & standard form','1.2.1.2.1':'Probability','1.2.2.1.1':'Symbols & equations','1.2.2.1.2':'Index laws','1.2.2.1.3':'Like/unlike terms','1.2.2.1.4':'Simplify like/unlike terms','1.2.2.1.5':'Simplify brackets','1.2.2.1.6':'HCF & factorisation','1.2.2.1.7':'Quadratic factorisation','1.2.2.1.8':'Algebraic operators','1.2.2.1.9':'Transposition intro','1.2.2.1.10':'Change of subject','1.2.2.2.1':'Substitution','1.2.2.2.2':'Linear equations','1.2.2.2.3':'Quadratic (factor)','1.2.2.2.4':'Quadratic formula','1.2.2.2.5':'Simultaneous equations','1.2.2.3.1':'Index/log conversion','1.2.2.3.2':'Laws of logarithms','1.2.2.3.3':'Indicial equations','1.2.2.4.1':'Plotting graphs','1.2.2.4.2':'Straight-line graphs','1.2.2.4.3':'Simultaneous (graphical)','1.2.2.5.1':'EAL Exam 003A','1.2.2.6.1':'Triangle properties','1.2.2.6.2':'Pythagoras theorem','1.2.2.6.3':'Pythagoras (calculation)','1.2.2.6.4':'Trig ratios','1.2.2.6.5':'Trig functions','1.2.2.6.6':'Inverse trig','1.2.2.6.7':'Trig identities','1.2.2.6.8':'Sine/cos graphs (CAST)','1.2.2.6.9':'Sine & cosine rules','1.2.2.6.10':'Radians','1.2.2.7.1':'Circle properties','1.2.2.7.2':'Unit conversions','1.2.2.7.3':'Perimeter/area/volume','1.2.2.7.4':'Compound shapes','1.2.2.7.5':'2D to 3D prism','1.2.2.7.6':'Surface area & volume','1.2.2.8.1':'EAL Exam 003B','1.2.2.9.1':'Differentiation','1.2.2.9.2':'2nd derivatives','1.2.2.9.3':'Displacement/velocity/acceleration','1.2.2.9.4':'Differentiation notation','1.2.2.10.1':'Integration intro','1.2.2.10.5':'Standard integrals','1.2.2.10.6':'Definite integrals','1.2.2.10.7':'Integration problems','1.2.2.11.1':'Data types','1.2.2.11.3':'Statistical diagrams','1.2.2.12.1':'Mean/median/mode','1.2.2.12.3':'Grouped mean','1.2.2.12.4':'Variance & std dev','1.2.2.12.5':'Population vs sample','1.2.2.13.1':'EAL Exam 003C'};
-const SECTION_BOOK_FILE={pt1:'books/pt1.html',pt2a:'books/book1.html',pt2b:'books/book2.html',pt2c:'books/book3.html'};
+const KLP_MAPS = {pt1:PT1, pt2a:PT2A, pt2b:PT2B, pt2c:PT2C};
+const PERIOD_KLP_MAP = {
+  pt1:{1:'1.2.1.1.1',2:'1.2.1.1.4',3:'1.2.1.1.4',4:'1.2.1.1.5',5:'1.2.1.1.6',6:'1.2.1.1.7',7:'1.2.1.1.8',8:'1.2.1.1.8',9:'1.2.1.1.9',10:'1.2.1.1.11',11:'1.2.1.1.11',12:'1.2.1.1.11',13:'1.2.1.1.12',14:'1.2.1.1.12',15:'1.2.1.1.13',16:'1.2.1.1.14',17:'1.2.1.1.14',18:'1.2.1.1.15',19:'1.2.1.1.15',20:'1.2.1.1.16',21:'1.2.1.1.16',22:'1.2.1.1.16',23:'1.2.1.1.16',24:'1.2.1.1.16',25:'1.2.1.1.17',26:'1.2.1.1.18',27:'1.2.1.1.18',28:'1.2.1.2.1',29:'1.2.1.1.13',30:'1.2.1.1.13'},
+  pt2a:{1:'1.2.2.1.1',2:'1.2.2.1.2',3:'1.2.2.1.2',4:'1.2.2.1.3',5:'1.2.2.1.4',6:'1.2.2.1.4',7:'1.2.2.1.5',8:'1.2.2.1.6',9:'1.2.2.1.7',10:'1.2.2.1.7',11:'1.2.2.1.8',12:'1.2.2.1.9',13:'1.2.2.1.9',14:'1.2.2.1.10',15:'1.2.2.1.10',16:'1.2.2.1.10',17:'1.2.2.1.10',18:'1.2.2.2.1',19:'1.2.2.2.1',20:'1.2.2.2.2',21:'1.2.2.2.2',22:'1.2.2.2.3',23:'1.2.2.2.3',24:'1.2.2.2.4',25:'1.2.2.2.4',26:'1.2.2.2.5',27:'1.2.2.2.5',28:'1.2.2.3.1',29:'1.2.2.3.1',30:'1.2.2.3.2',31:'1.2.2.3.2',32:'1.2.2.3.3',33:'1.2.2.3.3',34:'1.2.2.4.1',35:'1.2.2.4.1',36:'1.2.2.4.2',37:'1.2.2.4.2',38:'1.2.2.4.3',39:'1.2.2.4.3',40:'1.2.2.4.3',41:'1.2.2.5.1',42:'1.2.2.5.1',43:'1.2.2.5.1'},
+  pt2b:{1:'1.2.2.6.1',2:'1.2.2.6.2',3:'1.2.2.6.3',4:'1.2.2.6.4',5:'1.2.2.6.4',6:'1.2.2.6.5',7:'1.2.2.6.5',8:'1.2.2.6.6',9:'1.2.2.6.6',10:'1.2.2.6.7',11:'1.2.2.6.8',12:'1.2.2.6.8',13:'1.2.2.6.9',14:'1.2.2.6.9',15:'1.2.2.6.10',16:'1.2.2.7.1',17:'1.2.2.7.2',18:'1.2.2.7.3',19:'1.2.2.7.3',20:'1.2.2.7.4',21:'1.2.2.7.5',22:'1.2.2.7.6',23:'1.2.2.7.6',24:'1.2.2.8.1',25:'1.2.2.8.1',26:'1.2.2.8.1'},
+  pt2c:{1:'1.2.2.9.1',2:'1.2.2.9.1',3:'1.2.2.9.1',4:'1.2.2.9.1',5:'1.2.2.9.1',6:'1.2.2.9.2',7:'1.2.2.9.2',8:'1.2.2.9.3',9:'1.2.2.9.3',10:'1.2.2.9.4',11:'1.2.2.9.4',12:'1.2.2.10.1',13:'1.2.2.10.5',14:'1.2.2.10.5',15:'1.2.2.10.5',16:'1.2.2.10.5',17:'1.2.2.10.5',18:'1.2.2.10.5',19:'1.2.2.10.6',20:'1.2.2.10.6',21:'1.2.2.10.7',22:'1.2.2.10.7',23:'1.2.2.11.1',24:'1.2.2.11.3',25:'1.2.2.11.3',26:'1.2.2.12.1',27:'1.2.2.12.3',28:'1.2.2.12.4',29:'1.2.2.12.4',30:'1.2.2.12.5',31:'1.2.2.13.1',32:'1.2.2.13.1',33:'1.2.2.13.1'}
+};
+const SECTION_BOOK_FILE = {pt1:'books/pt1.html', pt2a:'books/book1.html', pt2b:'books/book2.html', pt2c:'books/book3.html'};
+const SEC_COLORS = {pt1:{bg:"#1a6b4a",light:"#d4f0e4"}, pt2a:{bg:"#1a5276",light:"#d4e6f1"}, pt2b:{bg:"#6c3483",light:"#e8d5f5"}, pt2c:{bg:"#7d3c0a",light:"#fde8d0"}};
+const SEC_LABELS = {pt1:"Pt1 – Arithmetic", pt2a:"Pt2a – Algebra", pt2b:"Pt2b – Trig & Geometry", pt2c:"Pt2c – Calculus & Stats"};
+const SLOTS = [{id:"am1",label:"AM 1",time:"08:30–10:00"},{id:"am2",label:"AM 2",time:"10:30–12:00"},{id:"lunch",label:"Lunch",time:"13:00–13:30"},{id:"pm1",label:"PM 1",time:"13:30–15:00"},{id:"pm2",label:"PM 2",time:"15:30–17:00"}];
+const DAYS = ["Mon","Tue","Wed","Thu","Fri"];
 
-let tData={}, negatedDateMap={}, weekIdx=0, dragKey=null, cutKey=null, saveTimer=null, WEEKS=[];
+// ── State ─────────────────────────────────────────────────────────────────────
+let tData = {}, negatedDateMap = {}, weekIdx = 0, dragKey = null, cutKey = null, saveTimer = null, WEEKS = [];
+let _currentNoteKey = null;
 
-function getWeeks(){
-  const dates=Object.keys(tData).map(k=>k.split('_')[0]).filter(Boolean).sort();
-  if(!dates.length)return[];
-  const start=new Date(dates[0]+'T12:00:00'), end=new Date(dates[dates.length-1]+'T12:00:00');
-  const weeks=[]; let cur=new Date(start);
-  while(cur.getDay()!==1)cur.setDate(cur.getDate()-1);
-  while(cur<=end){
-    const days=[];
-    for(let i=0;i<5;i++){const d=new Date(cur);d.setDate(d.getDate()+i);days.push(d.toISOString().split('T')[0]);}
-    weeks.push({mon:new Date(cur),days});
-    cur.setDate(cur.getDate()+7);
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function klpLabel(section, pEnd, single) {
+  const map = KLP_MAPS[section];
+  if (!map) return 'P' + pEnd;
+  if (single) return map[pEnd] || ('P' + pEnd);
+  const a = map[pEnd-1] || ('P' + (pEnd-1));
+  const b = map[pEnd]   || ('P' + pEnd);
+  return a === b ? a : a + ' / ' + b;
+}
+function fmtDate(s) {
+  return new Date(s + 'T12:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+}
+function klpRefsForEntry(entry) {
+  const map = PERIOD_KLP_MAP[entry.section];
+  if (!map) return [];
+  const refs = [];
+  const add = r => { if (r && !refs.includes(r)) refs.push(r); };
+  if (entry.single) { add(map[entry.pEnd]); }
+  else { add(map[entry.pEnd-1]); add(map[entry.pEnd]); }
+  return refs;
+}
+
+// ── Weeks ─────────────────────────────────────────────────────────────────────
+function getWeeks() {
+  const dates = Object.keys(tData).map(k => k.split('_')[0]).filter(Boolean).sort();
+  if (!dates.length) return [];
+  const end = new Date(dates[dates.length-1] + 'T12:00:00');
+  const weeks = [];
+  let cur = new Date(dates[0] + 'T12:00:00');
+  while (cur.getDay() !== 1) cur.setDate(cur.getDate() - 1);
+  while (cur <= end) {
+    const days = [];
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(cur);
+      d.setDate(d.getDate() + i);
+      days.push(d.toISOString().split('T')[0]);
+    }
+    weeks.push({mon: new Date(cur), days});
+    cur.setDate(cur.getDate() + 7);
   }
   return weeks;
 }
-function fmtDate(s){return new Date(s+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
 
-function scheduleSave(){
+// ── Save ──────────────────────────────────────────────────────────────────────
+function scheduleSave() {
   clearTimeout(saveTimer);
-  const ind=document.getElementById('save-indicator');
-  ind.textContent='Unsaved…'; ind.className='save-indicator saving';
-  saveTimer=setTimeout(async()=>{
-    ind.textContent='Saving…';
-    const{error}=await _sb.from('plans').update({timetable_data:tData}).eq('slug',planSlug);
-    ind.textContent=error?'Save failed ⚠':'Saved ✓'; ind.className='save-indicator saved';
-    setTimeout(()=>{ind.textContent='';ind.className='save-indicator';},3000);
-  },1500);
+  const ind = document.getElementById('save-indicator');
+  ind.textContent = 'Unsaved…'; ind.className = 'save-indicator saving';
+  saveTimer = setTimeout(async () => {
+    ind.textContent = 'Saving…';
+    const {error} = await _sb.from('plans').update({timetable_data: tData}).eq('slug', planSlug);
+    ind.textContent = error ? 'Save failed ⚠' : 'Saved ✓';
+    ind.className = 'save-indicator saved';
+    setTimeout(() => { ind.textContent = ''; ind.className = 'save-indicator'; }, 3000);
+  }, 1500);
 }
 
-function render(){
-  if(!WEEKS.length)return;
-  const week=WEEKS[weekIdx];
-  document.getElementById('weekLabel').textContent='w/c '+week.mon.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  document.getElementById('weekRange').textContent=fmtDate(week.days[0])+' – '+fmtDate(week.days[4]);
-  document.getElementById('btnPrev').disabled=weekIdx===0;
-  document.getElementById('btnNext').disabled=weekIdx===WEEKS.length-1;
-  const showSlots=SLOTS.filter(s=>{if(s.id==='lunch')return week.days.some(d=>tData[d+'_lunch']);return true;});
-  const grid=document.getElementById('grid');
-  grid.innerHTML=''; grid.style.gridTemplateColumns='80px repeat(5,1fr)';
-  const ce=document.createElement('div'); ce.className='grid-header'; ce.textContent='Slot'; grid.appendChild(ce);
-  DAYS.forEach((d,i)=>{const el=document.createElement('div');el.className='grid-header day-header';el.innerHTML=d+'<div class="date-sub">'+fmtDate(week.days[i])+'</div>';grid.appendChild(el);});
-  showSlots.forEach(slot=>{
-    const lbl=document.createElement('div'); lbl.className='slot-label';
-    lbl.innerHTML='<span class="slot-name">'+slot.label+'</span><span class="slot-time">'+slot.time+'</span>';
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  if (!WEEKS.length) return;
+  const week = WEEKS[weekIdx];
+  document.getElementById('weekLabel').textContent = 'w/c ' + week.mon.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+  document.getElementById('weekRange').textContent = fmtDate(week.days[0]) + ' – ' + fmtDate(week.days[4]);
+  document.getElementById('btnPrev').disabled = weekIdx === 0;
+  document.getElementById('btnNext').disabled = weekIdx === WEEKS.length - 1;
+
+  const showSlots = SLOTS.filter(s => {
+    if (s.id === 'lunch') return week.days.some(d => tData[d + '_lunch']);
+    return true;
+  });
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  // Header row
+  const corner = document.createElement('div');
+  corner.className = 'grid-header';
+  corner.textContent = 'Slot';
+  grid.appendChild(corner);
+  DAYS.forEach((d, i) => {
+    const el = document.createElement('div');
+    el.className = 'grid-header day-header';
+    el.innerHTML = d + '<div class="date-sub">' + fmtDate(week.days[i]) + '</div>';
+    grid.appendChild(el);
+  });
+
+  // Slot rows
+  showSlots.forEach(slot => {
+    const lbl = document.createElement('div');
+    lbl.className = 'slot-label';
+    lbl.innerHTML = '<span class="slot-name">' + slot.label + '</span><span class="slot-time">' + slot.time + '</span>';
     grid.appendChild(lbl);
-    week.days.forEach(date=>{
-      const key=date+'_'+slot.id, entry=tData[key], cell=document.createElement('div');
-      if((date in negatedDateMap)&&slot.id==='am1'){const adLbl=negatedDateMap[date]||'Off';cell.className='cell cell-airday';cell.innerHTML='<div class="cell-airday-label">✈ '+adLbl+'</div>';grid.appendChild(cell);return;}
-      if(date in negatedDateMap){cell.className='cell cell-airday';cell.style.opacity='0.3';grid.appendChild(cell);return;}
-      if(!entry){
-        cell.className='cell cell-empty';
-        cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('drag-over');});
-        cell.addEventListener('dragleave',()=>cell.classList.remove('drag-over'));
-        cell.addEventListener('drop',()=>{cell.classList.remove('drag-over');if(cutKey){handleCutPaste(key);}else{handleDrop(key);}});
-        cell.addEventListener('click',()=>{if(cutKey)handleCutPaste(key);});
-      } else if(entry.isMaths){
-        const sc=SEC_COLORS[entry.section]||SEC_COLORS.pt1;
-        const lbl2=entry.override||(entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single));
-        const pLbl=entry.single?'P'+entry.pEnd:'P'+(entry.pEnd-1)+'–P'+entry.pEnd;
-        cell.className='cell cell-maths'+(entry.done?' done':'')+(key===cutKey?' cell-cut':'');
-        if(entry.isExam){cell.style.background='#2a0808';cell.style.borderLeft='4px solid #cc2222';cell.innerHTML='<div class="cell-tag" style="background:#8b1a1a">⚠ EXAM</div><div class="cell-main-exam">'+lbl2+'</div><div class="cell-period-exam">'+pLbl+'</div>';}
-        else{cell.style.background=sc.light;cell.style.borderLeft='4px solid '+sc.bg;cell.innerHTML='<div class="cell-tag" style="background:'+sc.bg+'">'+SEC_LABELS[entry.section]+'</div><div class="cell-main">'+lbl2+'</div><div class="cell-period">'+pLbl+'</div>'+(entry.done?'<div class="cell-done-badge">✓ done</div>':'');}
-        cell.draggable=true;
-        let didDrag=false;
-        cell.addEventListener('dragstart',e=>{dragKey=key;didDrag=true;e.dataTransfer.effectAllowed='move';});
-        cell.addEventListener('dragend',()=>{setTimeout(()=>{didDrag=false;},50);});
-        cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('drag-over');});
-        cell.addEventListener('dragleave',()=>cell.classList.remove('drag-over'));
-        cell.addEventListener('drop',()=>{cell.classList.remove('drag-over');if(cutKey){handleCutPaste(key);}else{handleDrop(key);}});
-        cell.addEventListener('click',()=>{if(!didDrag){if(cutKey){handleCutPaste(key);}else{openPanel(Object.assign({key},entry));}}});
-      } else {
-        const isPEd=/p\s*ed/i.test(entry.label), isOtherExam=/exam/i.test(entry.label);
-        if(isPEd){cell.className='cell cell-ped';cell.innerHTML='<div class="cell-ped-label">'+entry.label+'</div>';}
-        else if(isOtherExam){cell.className='cell cell-exam-other';cell.innerHTML='<div class="cell-exam-other-label">'+entry.label+'</div>';}
-        else{cell.className='cell cell-other';cell.innerHTML='<div class="cell-other-label">'+entry.label+'</div>';}
-        cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('drag-over');});
-        cell.addEventListener('dragleave',()=>cell.classList.remove('drag-over'));
-        cell.addEventListener('drop',()=>{cell.classList.remove('drag-over');if(cutKey){handleCutPaste(key);}else{handleDrop(key);}});
-        cell.addEventListener('click',()=>{if(cutKey)handleCutPaste(key);});
+
+    week.days.forEach(date => {
+      const key = date + '_' + slot.id;
+      const entry = tData[key];
+      const cell = document.createElement('div');
+
+      // Air day
+      if (date in negatedDateMap) {
+        if (slot.id === 'am1') {
+          cell.className = 'cell cell-airday';
+          cell.innerHTML = '<div class="cell-airday-label">&#x2708; ' + (negatedDateMap[date] || 'Off') + '</div>';
+        } else {
+          cell.className = 'cell cell-airday';
+          cell.style.opacity = '0.3';
+        }
+        grid.appendChild(cell);
+        return;
       }
+
+      if (!entry) {
+        // Empty cell
+        cell.className = 'cell cell-empty';
+        cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
+        cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+        cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
+        cell.addEventListener('click', () => { if (cutKey) handleCutPaste(key); });
+
+      } else if (entry.isMaths) {
+        // Maths cell
+        const sc = SEC_COLORS[entry.section] || SEC_COLORS.pt1;
+        const lbl2 = entry.override || (entry.isExam ? entry.label : klpLabel(entry.section, entry.pEnd, entry.single));
+        const pLbl = entry.single ? ('P' + entry.pEnd) : ('P' + (entry.pEnd-1) + '–P' + entry.pEnd);
+        const isDone = !!entry.done;
+        const isCut = key === cutKey;
+
+        cell.className = 'cell cell-maths' + (isDone ? ' done' : '') + (isCut ? ' cut-mode' : '');
+        if (entry.isExam) {
+          cell.style.background = '#2a0808';
+          cell.style.borderLeft = '4px solid #cc2222';
+          cell.innerHTML = '<div class="cell-tag" style="background:#8b1a1a">&#x26A0; EXAM</div><div class="cell-main-exam">' + lbl2 + '</div><div class="cell-period-exam">' + pLbl + '</div>';
+        } else {
+          cell.style.background = sc.light;
+          cell.style.borderLeft = '4px solid ' + sc.bg;
+          cell.innerHTML = '<div class="cell-tag" style="background:' + sc.bg + '">' + SEC_LABELS[entry.section] + '</div><div class="cell-main">' + lbl2 + '</div><div class="cell-period">' + pLbl + '</div>' + (isDone ? '<div class="cell-done-badge">&#x2713; done</div>' : '');
+        }
+        cell.draggable = true;
+        let didDrag = false;
+        cell.addEventListener('dragstart', e => { dragKey = key; didDrag = true; e.dataTransfer.effectAllowed = 'move'; });
+        cell.addEventListener('dragend', () => { setTimeout(() => { didDrag = false; }, 50); });
+        cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
+        cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+        cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
+        cell.addEventListener('click', () => {
+          if (didDrag) return;
+          if (cutKey) { handleCutPaste(key); return; }
+          openPanel(Object.assign({}, entry, {key}));
+        });
+
+      } else {
+        // Non-maths cell
+        const isPEd = /p\s*ed/i.test(entry.label);
+        const isOtherExam = /exam/i.test(entry.label);
+        if (isPEd) {
+          cell.className = 'cell cell-ped';
+          cell.innerHTML = '<div class="cell-ped-label">' + entry.label + '</div>';
+        } else if (isOtherExam) {
+          cell.className = 'cell cell-exam-other';
+          cell.innerHTML = '<div class="cell-exam-other-label">' + entry.label + '</div>';
+        } else {
+          cell.className = 'cell cell-other';
+          cell.innerHTML = '<div class="cell-other-label">' + entry.label + '</div>';
+        }
+        cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
+        cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+        cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
+        cell.addEventListener('click', () => { if (cutKey) handleCutPaste(key); });
+      }
+
       grid.appendChild(cell);
     });
   });
 }
 
-function handleDrop(targetKey){
-  if(!dragKey||dragKey===targetKey){dragKey=null;return;}
-  const src=tData[dragKey],tgt=tData[targetKey];
-  if(src){
-    const[tDate,tSlot]=targetKey.split('_'),[sDate,sSlot]=dragKey.split('_');
-    tData[targetKey]=Object.assign({},src,{date:tDate,slot:tSlot});
-    if(tgt)tData[dragKey]=Object.assign({},tgt,{date:sDate,slot:sSlot});
+// ── Drag/drop & cut-paste ─────────────────────────────────────────────────────
+function handleDrop(targetKey) {
+  if (!dragKey || dragKey === targetKey) { dragKey = null; return; }
+  const src = tData[dragKey], tgt = tData[targetKey];
+  if (src) {
+    const [tDate, tSlot] = targetKey.split('_');
+    const [sDate, sSlot] = dragKey.split('_');
+    tData[targetKey] = Object.assign({}, src, {date: tDate, slot: tSlot});
+    if (tgt) tData[dragKey] = Object.assign({}, tgt, {date: sDate, slot: sSlot});
     else delete tData[dragKey];
   }
-  dragKey=null; render(); scheduleSave();
+  dragKey = null;
+  render();
+  scheduleSave();
 }
-function handleCutPaste(targetKey){
-  if(!cutKey||cutKey===targetKey){cutKey=null;render();return;}
-  const src=tData[cutKey],tgt=tData[targetKey];
-  if(src){
-    const[tDate,tSlot]=targetKey.split('_'),[sDate,sSlot]=cutKey.split('_');
-    tData[targetKey]=Object.assign({},src,{date:tDate,slot:tSlot});
-    if(tgt)tData[cutKey]=Object.assign({},tgt,{date:sDate,slot:sSlot});
+
+function handleCutPaste(targetKey) {
+  if (!cutKey || cutKey === targetKey) { cutKey = null; render(); return; }
+  const src = tData[cutKey], tgt = tData[targetKey];
+  if (src) {
+    const [tDate, tSlot] = targetKey.split('_');
+    const [sDate, sSlot] = cutKey.split('_');
+    tData[targetKey] = Object.assign({}, src, {date: tDate, slot: tSlot});
+    if (tgt) tData[cutKey] = Object.assign({}, tgt, {date: sDate, slot: sSlot});
     else delete tData[cutKey];
   }
-  cutKey=null; render(); scheduleSave();
-}
-
-function buildLegend(){
-  const leg=document.getElementById('legend');
-  Object.entries(SEC_COLORS).forEach(([k,c])=>{const item=document.createElement('div');item.className='legend-item';item.innerHTML='<div class="legend-dot" style="background:'+c.bg+'"></div><span>'+SEC_LABELS[k]+'</span>';leg.appendChild(item);});
-  [['#8b1a1a','Maths exam'],['#d4870a','P Ed'],['#1c2030','Other subject'],['#2a1018','Other exam']].forEach(([col,lbl])=>{const item=document.createElement('div');item.className='legend-item';item.innerHTML='<div class="legend-dot" style="background:'+col+';border:1px solid #3a4258"></div><span>'+lbl+'</span>';leg.appendChild(item);});
-}
-
-async function initPlan(){
-  if(!planSlug){document.getElementById('loading-state').textContent='No plan specified.';return;}
-  const{data:plan,error}=await _sb.from('plans').select('*').eq('slug',planSlug).single();
-  if(error||!plan){document.getElementById('loading-state').textContent='Plan not found: '+planSlug;return;}
-  document.title=plan.profile+' '+plan.course_number+' — Course Planner';
-  document.getElementById('page-title').textContent=plan.profile+' '+plan.course_number+' — Course Planner';
-  const startFmt=new Date(plan.start_date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('page-subtitle').textContent='Starting '+startFmt;
-  tData=plan.timetable_data||{};
-  // Build date->label map from negated_days (array of {label, dates:[]} objects)
-  negatedDateMap={};
-  (plan.negated_days||[]).forEach(entry=>{
-    const lbl=entry.label||'Off';
-    (entry.dates||[]).forEach(d=>{negatedDateMap[d]=lbl;});
-  });
-  WEEKS=getWeeks(); weekIdx=0;
-  document.getElementById('loading-state').style.display='none';
-  document.getElementById('planner').style.display='block';
-  buildLegend(); render();
-}
-initPlan();
-document.getElementById('btnPrev').addEventListener('click',()=>{weekIdx--;render();});
-document.getElementById('btnNext').addEventListener('click',()=>{weekIdx++;render();});
-
-// PANEL
-let _currentNoteKey=null;
-function klpRefsForEntry(entry){const map=PERIOD_KLP_MAP[entry.section];if(!map)return[];const refs=[],add=r=>{if(r&&!refs.includes(r))refs.push(r);};if(entry.single){add(map[entry.pEnd]);}else{add(map[entry.pEnd-1]);add(map[entry.pEnd]);}return refs;}
-function toggleDone(key){
-  if(!tData[key])return;
-  tData[key].done=!tData[key].done;
-  render(); scheduleSave();
-}
-function startCut(key){
-  cutKey=key;
-  closePanel();
+  cutKey = null;
   render();
-  // Show a cancel-cut toast
-  const ind=document.getElementById('save-indicator');
-  ind.textContent='✂ Cut — click target slot to move (any week)'; ind.className='save-indicator saving';
+  scheduleSave();
 }
-async function openPanel(entry){
-  const refs=klpRefsForEntry(entry),primaryRef=refs[0]||null;
-  const desc=primaryRef?(KLP_REF_DESC[primaryRef]||entry.label):entry.label;
-  const pLbl=entry.single?'P'+entry.pEnd:'P'+(entry.pEnd-1)+'–P'+entry.pEnd;
-  document.getElementById('panel-klp-ref').textContent=primaryRef||'';
-  document.getElementById('panel-klp-title').textContent=desc;
-  document.getElementById('panel-period').textContent=pLbl;
-  const frame=document.getElementById('panel-book-frame');
-  const bookFile=SECTION_BOOK_FILE[entry.section]||'';
-  const sectionFile=primaryRef?'books/sections/'+entry.section+'/'+primaryRef+'.html':null;
-  if(sectionFile){fetch(sectionFile).then(r=>{frame.src=r.ok?sectionFile:bookFile+(primaryRef?'#klp-'+primaryRef.replace(/\./g,'-'):'');}).catch(()=>{frame.src=bookFile;});}
-  else{frame.src=bookFile;}
-  document.getElementById('panel-book-link').href=bookFile+(primaryRef?'#klp-'+primaryRef.replace(/\./g,'-'):'');
-  const noteKey='note_'+entry.section+'_p'+entry.pEnd;
-  _currentNoteKey=noteKey;
-  document.getElementById('panel-notes').value=await loadNote(noteKey);
-  document.getElementById('panel-save-status').textContent='';
-  document.getElementById('panel-save-btn').onclick=()=>saveNote(noteKey);
-  ['link-input-label','link-input-url'].forEach(id=>{document.getElementById(id).value=''});
-  document.getElementById('links-status').textContent='';
-  document.getElementById('links-list').innerHTML='<div class="empty-msg">Loading…</div>';
-  document.getElementById('resources-list').innerHTML='';
+
+// ── Legend ────────────────────────────────────────────────────────────────────
+function buildLegend() {
+  const leg = document.getElementById('legend');
+  Object.entries(SEC_COLORS).forEach(([k, c]) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = '<div class="legend-dot" style="background:' + c.bg + '"></div><span>' + SEC_LABELS[k] + '</span>';
+    leg.appendChild(item);
+  });
+  [['#8b1a1a','Maths exam'],['#d4870a','P Ed'],['#1c2030','Other subject'],['#1a4a7a','Air Day']].forEach(([col, lbl]) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = '<div class="legend-dot" style="background:' + col + ';border:1px solid #3a4258"></div><span>' + lbl + '</span>';
+    leg.appendChild(item);
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function initPlan() {
+  if (!planSlug) { document.getElementById('loading-state').textContent = 'No plan specified.'; return; }
+  try {
+    const {data: plan, error} = await _sb.from('plans').select('*').eq('slug', planSlug).single();
+    if (error || !plan) { document.getElementById('loading-state').textContent = 'Plan not found: ' + planSlug + (error ? ' — ' + error.message : ''); return; }
+    document.title = plan.profile + ' ' + plan.course_number + ' — Course Planner';
+    document.getElementById('page-title').textContent = plan.profile + ' ' + plan.course_number + ' — Course Planner';
+    const startFmt = new Date(plan.start_date + 'T12:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+    document.getElementById('page-subtitle').textContent = 'Starting ' + startFmt;
+    tData = plan.timetable_data || {};
+    negatedDateMap = {};
+    (plan.negated_days || []).forEach(entry => {
+      const lbl = (entry && entry.label) ? entry.label : 'Off';
+      const dates = (entry && entry.dates) ? entry.dates : (typeof entry === 'string' ? [entry] : []);
+      dates.forEach(d => { negatedDateMap[d] = lbl; });
+    });
+    WEEKS = getWeeks(); weekIdx = 0;
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('planner').style.display = 'block';
+    buildLegend();
+    render();
+  } catch(err) {
+    document.getElementById('loading-state').textContent = 'Error loading plan: ' + err.message;
+  }
+}
+
+document.getElementById('btnPrev').addEventListener('click', () => { weekIdx--; render(); });
+document.getElementById('btnNext').addEventListener('click', () => { weekIdx++; render(); });
+
+initPlan();
+
+// ── Panel ─────────────────────────────────────────────────────────────────────
+function openPanel(entry) {
+  const refs = klpRefsForEntry(entry);
+  const primaryRef = refs[0] || null;
+  const defaultTitle = entry.isExam ? entry.label : klpLabel(entry.section, entry.pEnd, entry.single);
+  const pLbl = entry.single ? ('P' + entry.pEnd) : ('P' + (entry.pEnd-1) + '–P' + entry.pEnd);
+
+  document.getElementById('panel-klp-ref').textContent = primaryRef || '';
+  document.getElementById('panel-klp-title').textContent = entry.override || defaultTitle;
+  document.getElementById('panel-period').textContent = pLbl;
+
+  // Book
+  const frame = document.getElementById('panel-book-frame');
+  const bookFile = SECTION_BOOK_FILE[entry.section] || '';
+  const sectionFile = primaryRef ? ('books/sections/' + entry.section + '/' + primaryRef + '.html') : null;
+  if (sectionFile) {
+    fetch(sectionFile).then(r => { frame.src = r.ok ? sectionFile : bookFile; }).catch(() => { frame.src = bookFile; });
+  } else {
+    frame.src = bookFile;
+  }
+  document.getElementById('panel-book-link').href = bookFile + (primaryRef ? '#klp-' + primaryRef.replace(/\./g, '-') : '');
+
+  // Override
+  const ovInput = document.getElementById('panel-override-input');
+  ovInput.value = entry.override || '';
+  ovInput.placeholder = defaultTitle;
+  document.getElementById('panel-override-save').onclick = () => {
+    const v = ovInput.value.trim();
+    if (entry.key && tData[entry.key]) { tData[entry.key].override = v || undefined; }
+    entry.override = v || undefined;
+    document.getElementById('panel-klp-title').textContent = v || defaultTitle;
+    render(); scheduleSave();
+  };
+  document.getElementById('panel-override-clear').onclick = () => {
+    ovInput.value = '';
+    if (entry.key && tData[entry.key]) delete tData[entry.key].override;
+    entry.override = undefined;
+    document.getElementById('panel-klp-title').textContent = defaultTitle;
+    render(); scheduleSave();
+  };
+
+  // Done button
+  const doneBtn = document.getElementById('panel-done-btn');
+  doneBtn.textContent = entry.done ? '✓ Done ✓' : '✓ Done';
+  doneBtn.classList.toggle('active', !!entry.done);
+  doneBtn.onclick = () => {
+    if (!entry.key) return;
+    tData[entry.key].done = !tData[entry.key].done;
+    entry.done = tData[entry.key].done;
+    doneBtn.textContent = entry.done ? '✓ Done ✓' : '✓ Done';
+    doneBtn.classList.toggle('active', entry.done);
+    render(); scheduleSave();
+  };
+
+  // Move button
+  document.getElementById('panel-cut-btn').onclick = () => {
+    if (!entry.key) return;
+    cutKey = entry.key;
+    closePanel();
+    render();
+    const ind = document.getElementById('save-indicator');
+    ind.textContent = '✂ Cut — click any target slot to move (any week)';
+    ind.className = 'save-indicator saving';
+  };
+
+  // Notes
+  const noteKey = 'note_' + entry.section + '_p' + entry.pEnd;
+  _currentNoteKey = noteKey;
+  loadNote(noteKey).then(content => {
+    document.getElementById('panel-notes').value = content;
+    document.getElementById('panel-save-status').textContent = '';
+  });
+  document.getElementById('panel-save-btn').onclick = () => saveNote(noteKey);
+
+  // Links
+  document.getElementById('link-input-label').value = '';
+  document.getElementById('link-input-url').value = '';
+  document.getElementById('links-status').textContent = '';
   refreshLinksTab(noteKey);
+
+  // Lesson plan
   loadLessonPlan(noteKey);
-  const doneBtn=document.getElementById('panel-done-btn');
-  const cutBtn=document.getElementById('panel-cut-btn');
-  doneBtn.onclick=()=>{if(entry.key){toggleDone(entry.key);entry.done=!entry.done;doneBtn.textContent=entry.done?'✓ Done ✓':'✓ Done';doneBtn.style.color=entry.done?'#7ecfaa':'#8a95a8';}};
-  doneBtn.textContent=entry.done?'✓ Done ✓':'✓ Done';
-  doneBtn.style.color=entry.done?'#7ecfaa':'#8a95a8';
-  cutBtn.onclick=()=>{if(entry.key)startCut(entry.key);};
-  // Override label
-  const ovInput=document.getElementById('panel-override-input');
-  const ovSave=document.getElementById('panel-override-save');
-  const ovClear=document.getElementById('panel-override-clear');
-  ovInput.value=entry.override||'';
-  ovInput.placeholder=entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single);
-  ovSave.onclick=()=>{
-    const v=ovInput.value.trim();
-    if(entry.key&&tData[entry.key]){tData[entry.key].override=v||undefined;entry.override=v||undefined;}
-    ovInput.placeholder=v||(entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single));
-    document.getElementById('panel-klp-title').textContent=v||ovInput.placeholder;
-    render(); scheduleSave();
-  };
-  ovClear.onclick=()=>{
-    ovInput.value='';
-    if(entry.key&&tData[entry.key])delete tData[entry.key].override;
-    entry.override=undefined;
-    const def=entry.isExam?entry.label:klpLabel(entry.section,entry.pEnd,entry.single);
-    ovInput.placeholder=def;
-    document.getElementById('panel-klp-title').textContent=def;
-    render(); scheduleSave();
-  };
+
   switchTab('book');
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('lesson-panel').classList.add('open');
 }
-function closePanel(){document.getElementById('panel-overlay').classList.remove('open');document.getElementById('lesson-panel').classList.remove('open');}
-function switchTab(tab){
-  document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active'));
-  ['panel-book-frame','panel-notes-tab','panel-links-tab','panel-lp-tab','panel-lp-frame'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
-  document.querySelector('[data-tab="'+tab+'"]').classList.add('active');
-  const map={book:'panel-book-frame',notes:'panel-notes-tab',links:'panel-links-tab',lessonplan:'panel-lp-tab'};
-  if(map[tab])document.getElementById(map[tab]).classList.add('active');
+
+function closePanel() {
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('lesson-panel').classList.remove('open');
 }
 
-// Notes
-const _noteCache={};
-async function loadNote(key){if(_noteCache[key]!==undefined)return _noteCache[key];try{const{data}=await _sb.from('notes').select('content').eq('note_key',key).maybeSingle();const val=(data&&data.content)||localStorage.getItem(key)||'';_noteCache[key]=val;return val;}catch{return localStorage.getItem(key)||'';}}
-async function saveNote(key){const content=document.getElementById('panel-notes').value;_noteCache[key]=content;localStorage.setItem(key,content);const s=document.getElementById('panel-save-status');s.textContent='Saving…';try{const{error}=await _sb.from('notes').upsert({note_key:key,content,updated_at:new Date().toISOString()},{onConflict:'note_key'});s.textContent=error?'Local only ⚠':'Saved ✓';}catch{s.textContent='Local only ⚠';}setTimeout(()=>{s.textContent='';},3000);}
-
-// Links
-const _linksCache={};
-async function loadLinks(key){if(_linksCache[key])return _linksCache[key];try{const{data}=await _sb.from('links').select('*').eq('note_key',key).order('sort_order').order('created_at');_linksCache[key]=data||[];return _linksCache[key];}catch{return[];}}
-async function addLink(key,label,url,embed){const maxOrder=(_linksCache[key]||[]).reduce((m,l)=>Math.max(m,l.sort_order||0),0);const{data,error}=await _sb.from('links').insert({note_key:key,label,url,embed,sort_order:maxOrder+1}).select().single();if(!error&&data){if(!_linksCache[key])_linksCache[key]=[];_linksCache[key].push(data);}return{error};}
-async function deleteLink(id,key){await _sb.from('links').delete().eq('id',id);if(_linksCache[key])_linksCache[key]=_linksCache[key].filter(l=>l.id!==id);}
-async function toggleEmbed(id,key,newVal){await _sb.from('links').update({embed:newVal}).eq('id',id);if(_linksCache[key]){const item=_linksCache[key].find(l=>l.id===id);if(item)item.embed=newVal;}}
-function youtubeEmbedUrl(url){const m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);return m?'https://www.youtube.com/embed/'+m[1]:null;}
-function isImage(url){return/\.(png|jpe?g|gif|svg|webp)(\?.*)?$/i.test(url);}
-function isPdf(url){return/\.pdf(\?.*)?$/i.test(url);}
-function embedHtml(l){
-  const ytUrl=youtubeEmbedUrl(l.url);
-  if(isImage(l.url))return'<img class="resource-embed-img" src="'+l.url+'" alt="'+l.label+'" loading="lazy">';
-  if(ytUrl)return'<iframe class="resource-embed" src="'+ytUrl+'" height="240" allowfullscreen></iframe>';
-  if(isPdf(l.url))return'<iframe class="resource-embed" src="'+l.url+'" height="360"></iframe>';
-  return'<div class="resource-no-embed">⚠ Can't embed directly — <a href="'+l.url+'" target="_blank">open in new tab</a></div>';
+function switchTab(tab) {
+  document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+  ['panel-book-frame','panel-notes-tab','panel-links-tab','panel-lp-tab'].forEach(id => {
+    document.getElementById(id).classList.remove('active');
+  });
+  document.querySelector('[data-tab="' + tab + '"]').classList.add('active');
+  const map = {book:'panel-book-frame', notes:'panel-notes-tab', links:'panel-links-tab', lessonplan:'panel-lp-tab'};
+  if (map[tab]) document.getElementById(map[tab]).classList.add('active');
 }
-function renderLinksList(links,key){
-  const list=document.getElementById('links-list');
-  if(!links.length){list.innerHTML='<div class="empty-msg">No links yet — add one below</div>';return;}
-  list.innerHTML=links.map(l=>{
-    const embed=l.embed?'<div class="resource-item" style="margin-top:6px;margin-bottom:4px;">'+embedHtml(l)+'</div>':'';
-    return'<div class="link-item" data-id="'+l.id+'"><span class="link-item-label" title="'+l.label+'">'+l.label+'</span><span class="link-item-url" title="'+l.url+'">'+l.url+'</span><a href="'+l.url+'" target="_blank" class="link-btn">Open</a><button class="link-btn embed-btn'+(l.embed?' embed-on':'')+'">'+( l.embed?'📌 On':'📌 Embed')+'</button><button class="link-btn del del-btn">✕</button></div>'+embed;
+
+// ── Notes ─────────────────────────────────────────────────────────────────────
+const _noteCache = {};
+async function loadNote(key) {
+  if (_noteCache[key] !== undefined) return _noteCache[key];
+  try {
+    const {data} = await _sb.from('notes').select('content').eq('note_key', key).maybeSingle();
+    const val = (data && data.content) || localStorage.getItem(key) || '';
+    _noteCache[key] = val;
+    return val;
+  } catch(e) {
+    return localStorage.getItem(key) || '';
+  }
+}
+async function saveNote(key) {
+  const content = document.getElementById('panel-notes').value;
+  _noteCache[key] = content;
+  localStorage.setItem(key, content);
+  const s = document.getElementById('panel-save-status');
+  s.textContent = 'Saving…';
+  try {
+    const {error} = await _sb.from('notes').upsert({note_key: key, content, updated_at: new Date().toISOString()}, {onConflict:'note_key'});
+    s.textContent = error ? 'Local only ⚠' : 'Saved ✓';
+  } catch(e) {
+    s.textContent = 'Local only ⚠';
+  }
+  setTimeout(() => { s.textContent = ''; }, 3000);
+}
+
+// ── Links ─────────────────────────────────────────────────────────────────────
+const _linksCache = {};
+async function loadLinks(key) {
+  if (_linksCache[key]) return _linksCache[key];
+  try {
+    const {data} = await _sb.from('links').select('*').eq('note_key', key).order('sort_order').order('created_at');
+    _linksCache[key] = data || [];
+    return _linksCache[key];
+  } catch(e) { return []; }
+}
+async function addLink(key, label, url, embed) {
+  const maxOrder = (_linksCache[key] || []).reduce((m, l) => Math.max(m, l.sort_order || 0), 0);
+  const {data, error} = await _sb.from('links').insert({note_key: key, label, url, embed, sort_order: maxOrder + 1}).select().single();
+  if (!error && data) { if (!_linksCache[key]) _linksCache[key] = []; _linksCache[key].push(data); }
+  return {error};
+}
+async function deleteLink(id, key) {
+  await _sb.from('links').delete().eq('id', id);
+  if (_linksCache[key]) _linksCache[key] = _linksCache[key].filter(l => l.id !== id);
+}
+async function toggleEmbed(id, key, newVal) {
+  await _sb.from('links').update({embed: newVal}).eq('id', id);
+  if (_linksCache[key]) { const item = _linksCache[key].find(l => l.id === id); if (item) item.embed = newVal; }
+}
+
+function youtubeEmbedUrl(url) {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? 'https://www.youtube.com/embed/' + m[1] : null;
+}
+function isImage(url) { return /\.(png|jpe?g|gif|svg|webp)(\?.*)?$/i.test(url); }
+function isPdf(url) { return /\.pdf(\?.*)?$/i.test(url); }
+
+function embedHtml(l) {
+  const ytUrl = youtubeEmbedUrl(l.url);
+  if (isImage(l.url)) return '<img class="resource-embed-img" src="' + l.url + '" alt="' + l.label + '" loading="lazy">';
+  if (ytUrl) return '<iframe class="resource-embed" src="' + ytUrl + '" height="240" allowfullscreen></iframe>';
+  if (isPdf(l.url)) return '<iframe class="resource-embed" src="' + l.url + '" height="360"></iframe>';
+  return '<div class="resource-no-embed">&#x26A0; Cannot embed — <a href="' + l.url + '" target="_blank">open in new tab</a></div>';
+}
+
+function renderLinksList(links, key) {
+  const list = document.getElementById('links-list');
+  if (!links.length) { list.innerHTML = '<div class="empty-msg">No links yet — add one below</div>'; return; }
+  list.innerHTML = links.map(l => {
+    const emb = l.embed ? '<div class="resource-item">' + embedHtml(l) + '</div>' : '';
+    return '<div class="link-item" data-id="' + l.id + '">' +
+      '<span class="link-item-label" title="' + l.label + '">' + l.label + '</span>' +
+      '<span class="link-item-url" title="' + l.url + '">' + l.url + '</span>' +
+      '<a href="' + l.url + '" target="_blank" class="link-btn">Open</a>' +
+      '<button class="link-btn embed-btn' + (l.embed ? ' embed-on' : '') + '">' + (l.embed ? '&#x1F4CC; On' : '&#x1F4CC; Embed') + '</button>' +
+      '<button class="link-btn del del-btn">&#x2715;</button>' +
+      '</div>' + emb;
   }).join('');
-  list.querySelectorAll('.del-btn').forEach((btn,i)=>{btn.addEventListener('click',async()=>{await deleteLink(links[i].id,key);renderLinksList(_linksCache[key]||[],key);});});
-  list.querySelectorAll('.embed-btn').forEach((btn,i)=>{btn.addEventListener('click',async()=>{const nv=!links[i].embed;await toggleEmbed(links[i].id,key,nv);renderLinksList(_linksCache[key]||[],key);});});
+  list.querySelectorAll('.del-btn').forEach((btn, i) => {
+    btn.addEventListener('click', async () => { await deleteLink(links[i].id, key); renderLinksList(_linksCache[key] || [], key); });
+  });
+  list.querySelectorAll('.embed-btn').forEach((btn, i) => {
+    btn.addEventListener('click', async () => { const nv = !links[i].embed; await toggleEmbed(links[i].id, key, nv); renderLinksList(_linksCache[key] || [], key); });
+  });
 }
-async function refreshLinksTab(key){const links=await loadLinks(key);renderLinksList(links,key);}
+
+async function refreshLinksTab(key) {
+  const links = await loadLinks(key);
+  renderLinksList(links, key);
+}
+
+// ── Lesson Plan ───────────────────────────────────────────────────────────────
+const _lpCache = {};
+async function loadLessonPlan(key) {
+  const lpKey = 'lp_' + key;
+  if (_lpCache[lpKey] !== undefined) { applyLpUrl(_lpCache[lpKey]); return; }
+  try {
+    const {data} = await _sb.from('notes').select('content').eq('note_key', lpKey).maybeSingle();
+    const url = (data && data.content) || '';
+    _lpCache[lpKey] = url;
+    applyLpUrl(url);
+  } catch(e) { applyLpUrl(''); }
+}
+function applyLpUrl(url) {
+  document.getElementById('lp-url-input').value = url;
+  const frame = document.getElementById('panel-lp-frame');
+  if (url) { frame.src = url; frame.classList.add('active'); }
+  else { frame.src = ''; frame.classList.remove('active'); }
+  document.getElementById('lp-status').textContent = '';
+}
 </script>
+
 <script>
-// Lesson Plan
-const _lpCache={};
-async function loadLessonPlan(key){
-  const lpKey='lp_'+key;
-  if(_lpCache[lpKey]!==undefined){applyLpUrl(_lpCache[lpKey]);return;}
-  try{const{data}=await _sb.from('notes').select('content').eq('note_key',lpKey).maybeSingle();
-    const url=(data&&data.content)||'';_lpCache[lpKey]=url;applyLpUrl(url);}
-  catch{applyLpUrl('');}
-}
-function applyLpUrl(url){
-  document.getElementById('lp-url-input').value=url;
-  const frame=document.getElementById('panel-lp-frame');
-  if(url){frame.src=url;frame.classList.add('active');}
-  else{frame.src='';frame.classList.remove('active');}
-  document.getElementById('lp-status').textContent='';
-}
-document.getElementById('lp-url-save').addEventListener('click',async()=>{
-  const url=document.getElementById('lp-url-input').value.trim();
-  const lpKey='lp_'+_currentNoteKey;
-  const status=document.getElementById('lp-status');
-  status.textContent='Saving…';
-  const{error}=await _sb.from('notes').upsert({note_key:lpKey,content:url,updated_at:new Date().toISOString()},{onConflict:'note_key'});
-  if(!error){_lpCache[lpKey]=url;applyLpUrl(url);status.textContent='Saved ✓';}
-  else status.textContent='Error ⚠';
-  setTimeout(()=>{status.textContent='';},2500);
+// Second block: listeners that require DOM elements to exist
+document.getElementById('panel-close').addEventListener('click', closePanel);
+document.getElementById('panel-overlay').addEventListener('click', closePanel);
+document.querySelectorAll('.panel-tab').forEach(t => { t.addEventListener('click', () => switchTab(t.dataset.tab)); });
+
+document.getElementById('links-add-btn').addEventListener('click', async () => {
+  const label = document.getElementById('link-input-label').value.trim();
+  const url   = document.getElementById('link-input-url').value.trim();
+  const status = document.getElementById('links-status');
+  if (!url) { status.textContent = 'Please enter a URL'; return; }
+  status.textContent = 'Saving…';
+  const {error} = await addLink(_currentNoteKey, label || url, url, false);
+  if (error) { status.textContent = 'Error ⚠'; return; }
+  document.getElementById('link-input-label').value = '';
+  document.getElementById('link-input-url').value = '';
+  status.textContent = 'Added ✓';
+  setTimeout(() => { status.textContent = ''; }, 2000);
+  renderLinksList(_linksCache[_currentNoteKey] || [], _currentNoteKey);
 });
-document.getElementById('lp-url-clear').addEventListener('click',async()=>{
-  const lpKey='lp_'+_currentNoteKey;
-  await _sb.from('notes').upsert({note_key:lpKey,content:'',updated_at:new Date().toISOString()},{onConflict:'note_key'});
-  _lpCache[lpKey]=''; applyLpUrl('');
+
+document.getElementById('link-input-url').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('links-add-btn').click();
 });
-document.getElementById('panel-close').addEventListener('click',closePanel);
-document.getElementById('panel-overlay').addEventListener('click',closePanel);
-document.querySelectorAll('.panel-tab').forEach(t=>{t.addEventListener('click',()=>switchTab(t.dataset.tab));});
-document.getElementById('links-add-btn').addEventListener('click',async()=>{const label=document.getElementById('link-input-label').value.trim(),url=document.getElementById('link-input-url').value.trim(),status=document.getElementById('links-status');if(!url){status.textContent='Please enter a URL';return;}status.textContent='Saving…';const{error}=await addLink(_currentNoteKey,label||url,url,false);if(error){status.textContent='Error ⚠';return;}document.getElementById('link-input-label').value='';document.getElementById('link-input-url').value='';status.textContent='Added ✓';setTimeout(()=>{status.textContent='';},2000);renderLinksList(_linksCache[_currentNoteKey]||[],_currentNoteKey);});
-document.getElementById('link-input-url').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('links-add-btn').click();});
+
+document.getElementById('lp-url-save').addEventListener('click', async () => {
+  const url = document.getElementById('lp-url-input').value.trim();
+  const lpKey = 'lp_' + _currentNoteKey;
+  const status = document.getElementById('lp-status');
+  status.textContent = 'Saving…';
+  const {error} = await _sb.from('notes').upsert({note_key: lpKey, content: url, updated_at: new Date().toISOString()}, {onConflict:'note_key'});
+  if (!error) { _lpCache[lpKey] = url; applyLpUrl(url); status.textContent = 'Saved ✓'; }
+  else { status.textContent = 'Error ⚠'; }
+  setTimeout(() => { status.textContent = ''; }, 2500);
+});
+
+document.getElementById('lp-url-clear').addEventListener('click', async () => {
+  const lpKey = 'lp_' + _currentNoteKey;
+  await _sb.from('notes').upsert({note_key: lpKey, content: '', updated_at: new Date().toISOString()}, {onConflict:'note_key'});
+  _lpCache[lpKey] = '';
+  applyLpUrl('');
+});
 </script>
 </body>
 </html>
