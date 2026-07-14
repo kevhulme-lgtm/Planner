@@ -425,27 +425,27 @@ function render() {
 
       } else {
         // Non-maths cell
-        const isPEd = entry.isPEd || /p[‘’]?\s*ed/i.test(entry.label);
+        const isPEd = entry.isPEd || /p['']?\s*ed/i.test(entry.label);
         const isOtherExam = entry.isNonMathsExam || /exam/i.test(entry.label);
         const isCutNM = key === cutKey;
         if (isPEd) {
-          cell.className = ‘cell cell-ped’ + (isCutNM ? ‘ cut-mode’ : ‘’);
-          cell.innerHTML = ‘<div class="cell-ped-label">’ + entry.label + ‘</div>’;
+          cell.className = 'cell cell-ped' + (isCutNM ? ' cut-mode' : '');
+          cell.innerHTML = '<div class="cell-ped-label">' + entry.label + '</div>';
         } else if (isOtherExam) {
-          cell.className = ‘cell cell-exam-other’ + (isCutNM ? ‘ cut-mode’ : ‘’);
-          cell.innerHTML = ‘<div class="cell-exam-other-label">’ + entry.label + ‘</div>’;
+          cell.className = 'cell cell-exam-other' + (isCutNM ? ' cut-mode' : '');
+          cell.innerHTML = '<div class="cell-exam-other-label">' + entry.label + '</div>';
         } else {
-          cell.className = ‘cell cell-other’ + (isCutNM ? ‘ cut-mode’ : ‘’);
-          cell.innerHTML = ‘<div class="cell-other-label">’ + entry.label + ‘</div>’;
+          cell.className = 'cell cell-other' + (isCutNM ? ' cut-mode' : '');
+          cell.innerHTML = '<div class="cell-other-label">' + entry.label + '</div>';
         }
         cell.draggable = true;
         let didDragNM = false;
-        cell.addEventListener(‘dragstart’, e => { dragKey = key; didDragNM = true; e.dataTransfer.effectAllowed = ‘move’; });
-        cell.addEventListener(‘dragend’, () => { setTimeout(() => { didDragNM = false; }, 50); });
-        cell.addEventListener(‘dragover’, e => { e.preventDefault(); cell.classList.add(‘drag-over’); });
-        cell.addEventListener(‘dragleave’, () => cell.classList.remove(‘drag-over’));
-        cell.addEventListener(‘drop’, () => { cell.classList.remove(‘drag-over’); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
-        cell.addEventListener(‘click’, () => {
+        cell.addEventListener('dragstart', e => { dragKey = key; didDragNM = true; e.dataTransfer.effectAllowed = 'move'; });
+        cell.addEventListener('dragend', () => { setTimeout(() => { didDragNM = false; }, 50); });
+        cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
+        cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+        cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
+        cell.addEventListener('click', () => {
           if (didDragNM) return;
           if (cutKey) { handleCutPaste(key); return; }
           openCellEdit(key, entry);
