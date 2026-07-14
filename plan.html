@@ -119,6 +119,27 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 .resource-embed-img{width:100%;max-height:400px;object-fit:contain;display:block;background:#0f1117;}
 .resource-no-embed{padding:12px;font-size:0.78rem;color:#8a95a8;}
 .resource-no-embed a{color:#5a8fcc;text-decoration:none;}
+/* Non-maths cells — now draggable */
+.cell-other,.cell-ped,.cell-exam-other{cursor:grab;}
+.cell-other:active,.cell-ped:active,.cell-exam-other:active{cursor:grabbing;opacity:0.8;}
+.cell-other.drag-over,.cell-ped.drag-over,.cell-exam-other.drag-over{outline:2px dashed #7ecfaa;outline-offset:-2px;}
+.cell-other.cut-mode,.cell-ped.cut-mode,.cell-exam-other.cut-mode{outline:2px dashed #f0a830;outline-offset:-2px;animation:pulse-cut 1s infinite;}
+/* Cell edit modal */
+#ce-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;align-items:center;justify-content:center;}
+#ce-overlay.open{display:flex;}
+#ce-modal{background:#1e2336;border:1px solid #4a5570;border-radius:10px;padding:20px;min-width:300px;max-width:380px;width:90%;display:flex;flex-direction:column;gap:14px;}
+#ce-modal-title{font-size:0.88rem;font-weight:600;color:#e8eaf0;font-family:'DM Mono',monospace;margin:0;}
+.ce-field-label{font-size:0.7rem;color:#8a95a8;font-family:'DM Mono',monospace;margin-bottom:4px;}
+#ce-label-input{background:#12151f;border:1px solid #3a4258;border-radius:5px;color:#e8eaf0;font-size:0.87rem;padding:7px 10px;width:100%;font-family:'DM Sans',sans-serif;}
+#ce-label-input:focus{outline:none;border-color:#7ecfaa;}
+.ce-type-row{display:flex;gap:8px;flex-wrap:wrap;}
+.ce-type-btn{padding:6px 14px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-size:0.78rem;font-family:'DM Mono',monospace;font-weight:600;transition:border-color 0.15s,box-shadow 0.15s;opacity:0.75;}
+.ce-type-btn.selected{opacity:1;box-shadow:0 0 0 2px #7ecfaa;}
+.ce-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:2px;}
+.ce-btn-save{background:#1a6b4a;border:none;color:#fff;padding:7px 20px;border-radius:6px;cursor:pointer;font-size:0.83rem;font-family:'DM Sans',sans-serif;font-weight:500;}
+.ce-btn-save:hover{background:#228b5e;}
+.ce-btn-cancel{background:none;border:1px solid #4a5570;color:#8a95a8;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:0.83rem;font-family:'DM Sans',sans-serif;}
+.ce-btn-cancel:hover{border-color:#8a95a8;}
 </style>
 </head>
 <body>
@@ -137,6 +158,32 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
     <span class="save-indicator" id="save-indicator"></span>
   </div>
   <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+</div>
+
+<!-- Cell edit modal -->
+<div id="ce-overlay">
+  <div id="ce-modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div id="ce-modal-title">Edit cell</div>
+      <button id="ce-close" style="background:none;border:none;color:#8a95a8;font-size:1.2rem;cursor:pointer;line-height:1;padding:0 2px;">&#x2715;</button>
+    </div>
+    <div>
+      <div class="ce-field-label">Label</div>
+      <input id="ce-label-input" type="text" autocomplete="off">
+    </div>
+    <div>
+      <div class="ce-field-label">Type / Colour</div>
+      <div class="ce-type-row">
+        <button class="ce-type-btn" data-type="other" style="background:#1c2030;color:#8a95b8;border-color:#3a4258;">Other</button>
+        <button class="ce-type-btn" data-type="ped" style="background:#2a1f0a;color:#f0a830;border-color:#d4870a;">P&#x2019;Ed</button>
+        <button class="ce-type-btn" data-type="exam" style="background:#2a1018;color:#e07070;border-color:#8b2020;">Exam</button>
+      </div>
+    </div>
+    <div class="ce-actions">
+      <button id="ce-save" class="ce-btn-save">Save</button>
+      <button id="ce-cancel" class="ce-btn-cancel">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <div id="panel-overlay"></div>
@@ -378,22 +425,31 @@ function render() {
 
       } else {
         // Non-maths cell
-        const isPEd = entry.isPEd || /p[’']?\s*ed/i.test(entry.label);
+        const isPEd = entry.isPEd || /p[‘’]?\s*ed/i.test(entry.label);
         const isOtherExam = entry.isNonMathsExam || /exam/i.test(entry.label);
+        const isCutNM = key === cutKey;
         if (isPEd) {
-          cell.className = 'cell cell-ped';
-          cell.innerHTML = '<div class="cell-ped-label">' + entry.label + '</div>';
+          cell.className = ‘cell cell-ped’ + (isCutNM ? ‘ cut-mode’ : ‘’);
+          cell.innerHTML = ‘<div class="cell-ped-label">’ + entry.label + ‘</div>’;
         } else if (isOtherExam) {
-          cell.className = 'cell cell-exam-other';
-          cell.innerHTML = '<div class="cell-exam-other-label">' + entry.label + '</div>';
+          cell.className = ‘cell cell-exam-other’ + (isCutNM ? ‘ cut-mode’ : ‘’);
+          cell.innerHTML = ‘<div class="cell-exam-other-label">’ + entry.label + ‘</div>’;
         } else {
-          cell.className = 'cell cell-other';
-          cell.innerHTML = '<div class="cell-other-label">' + entry.label + '</div>';
+          cell.className = ‘cell cell-other’ + (isCutNM ? ‘ cut-mode’ : ‘’);
+          cell.innerHTML = ‘<div class="cell-other-label">’ + entry.label + ‘</div>’;
         }
-        cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
-        cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
-        cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
-        cell.addEventListener('click', () => { if (cutKey) handleCutPaste(key); });
+        cell.draggable = true;
+        let didDragNM = false;
+        cell.addEventListener(‘dragstart’, e => { dragKey = key; didDragNM = true; e.dataTransfer.effectAllowed = ‘move’; });
+        cell.addEventListener(‘dragend’, () => { setTimeout(() => { didDragNM = false; }, 50); });
+        cell.addEventListener(‘dragover’, e => { e.preventDefault(); cell.classList.add(‘drag-over’); });
+        cell.addEventListener(‘dragleave’, () => cell.classList.remove(‘drag-over’));
+        cell.addEventListener(‘drop’, () => { cell.classList.remove(‘drag-over’); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
+        cell.addEventListener(‘click’, () => {
+          if (didDragNM) return;
+          if (cutKey) { handleCutPaste(key); return; }
+          openCellEdit(key, entry);
+        });
       }
 
       grid.appendChild(cell);
@@ -432,6 +488,46 @@ function handleCutPaste(targetKey) {
   scheduleSave();
 }
 
+// ── Cell edit modal ───────────────────────────────────────────────────────────
+let _ceKey = null;
+
+function openCellEdit(key, entry) {
+  _ceKey = key;
+  const input = document.getElementById('ce-label-input');
+  input.value = entry.label || '';
+
+  const isPEd = entry.isPEd || /p['']?\s*ed/i.test(entry.label);
+  const isOtherExam = entry.isNonMathsExam || /exam/i.test(entry.label);
+  const currentType = isPEd ? 'ped' : (isOtherExam ? 'exam' : 'other');
+  document.querySelectorAll('.ce-type-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.type === currentType);
+  });
+
+  document.getElementById('ce-overlay').classList.add('open');
+  input.focus();
+  input.select();
+}
+
+function closeCellEdit() {
+  document.getElementById('ce-overlay').classList.remove('open');
+  _ceKey = null;
+}
+
+function saveCellEdit() {
+  if (!_ceKey) return;
+  const newLabel = document.getElementById('ce-label-input').value.trim();
+  const selType = (document.querySelector('.ce-type-btn.selected') || {}).dataset || {};
+  const type = selType.type || 'other';
+  if (tData[_ceKey]) {
+    if (newLabel) tData[_ceKey].label = newLabel;
+    tData[_ceKey].isPEd = (type === 'ped');
+    tData[_ceKey].isNonMathsExam = (type === 'exam');
+  }
+  closeCellEdit();
+  render();
+  scheduleSave();
+}
+
 // ── Legend ────────────────────────────────────────────────────────────────────
 function buildLegend() {
   const leg = document.getElementById('legend');
@@ -466,7 +562,10 @@ async function initPlan() {
       const dates = (entry && entry.dates) ? entry.dates : (typeof entry === 'string' ? [entry] : []);
       dates.forEach(d => { negatedDateMap[d] = lbl; });
     });
-    WEEKS = getWeeks(); weekIdx = 0;
+    WEEKS = getWeeks();
+    const _today = new Date().toISOString().split('T')[0];
+    const _todayWk = WEEKS.findIndex(w => w.days[0] <= _today && _today <= w.days[4]);
+    weekIdx = _todayWk >= 0 ? _todayWk : (_today > (WEEKS[WEEKS.length-1]||{days:['']}).days[4] ? WEEKS.length-1 : 0);
     document.getElementById('loading-state').style.display = 'none';
     document.getElementById('planner').style.display = 'block';
     buildLegend();
@@ -701,6 +800,19 @@ function applyLpUrl(url) {
 
 <script>
 // Second block: listeners that require DOM elements to exist
+// Cell edit modal listeners
+document.getElementById('ce-close').addEventListener('click', closeCellEdit);
+document.getElementById('ce-cancel').addEventListener('click', closeCellEdit);
+document.getElementById('ce-overlay').addEventListener('click', e => { if (e.target.id === 'ce-overlay') closeCellEdit(); });
+document.getElementById('ce-save').addEventListener('click', saveCellEdit);
+document.getElementById('ce-label-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveCellEdit(); if (e.key === 'Escape') closeCellEdit(); });
+document.querySelectorAll('.ce-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ce-type-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+});
+
 document.getElementById('panel-close').addEventListener('click', closePanel);
 document.getElementById('panel-overlay').addEventListener('click', closePanel);
 document.querySelectorAll('.panel-tab').forEach(t => { t.addEventListener('click', () => switchTab(t.dataset.tab)); });
