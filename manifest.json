@@ -1,0 +1,19 @@
+{
+  "name": "TG5 Course Planner",
+  "short_name": "Planner",
+  "description": "Military Aviation Apprenticeship — TG5 Maths Course Planner",
+  "start_url": "/Planner/index.html",
+  "scope": "/Planner/",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

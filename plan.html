@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Course Planner</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Planner">
+<link rel="apple-touch-icon" href="icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -33,7 +40,8 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 .slot-label{background:#1e2336;padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:2px solid #3a4258;}
 .slot-name{font-size:0.68rem;font-family:'DM Mono',monospace;color:#c0c8d8;font-weight:500;}
 .slot-time{font-size:0.6rem;color:#6a75a0;margin-top:2px;}
-.cell{min-height:52px;padding:5px 7px;transition:all 0.1s;position:relative;}
+.cell{min-height:52px;padding:5px 7px;transition:all 0.1s;position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-y;}
+#drag-ghost{display:none;position:fixed;pointer-events:none;z-index:9999;padding:7px 12px;border-radius:6px;font-size:0.78rem;font-family:'DM Sans',sans-serif;font-weight:600;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:2px solid #7ecfaa;opacity:0.9;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
 .cell-empty{background:#12151f;}
 .cell-empty.drag-over{outline:2px dashed #7ecfaa;outline-offset:-2px;background:#1a2030;}
 .cell-other{background:#1c2030;display:flex;align-items:center;justify-content:center;}
@@ -159,6 +167,8 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
   </div>
   <div class="grid-wrap"><div class="grid" id="grid"></div></div>
 </div>
+
+<div id="drag-ghost"></div>
 
 <!-- Cell edit modal -->
 <div id="ce-overlay">
@@ -385,8 +395,9 @@ function render() {
       }
 
       if (!entry) {
-        // Empty cell
+        // Empty cell — needs data-key so touch drops can target it
         cell.className = 'cell cell-empty';
+        cell.dataset.key = key;
         cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
         cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
         cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
@@ -411,6 +422,7 @@ function render() {
           cell.innerHTML = '<div class="cell-tag" style="background:' + sc.bg + '">' + SEC_LABELS[entry.section] + '</div><div class="cell-main">' + lbl2 + '</div><div class="cell-period">' + pLbl + '</div>' + (isDone ? '<div class="cell-done-badge">&#x2713; done</div>' : '');
         }
         cell.draggable = true;
+        cell.dataset.key = key;
         let didDrag = false;
         cell.addEventListener('dragstart', e => { dragKey = key; didDrag = true; e.dataTransfer.effectAllowed = 'move'; });
         cell.addEventListener('dragend', () => { setTimeout(() => { didDrag = false; }, 50); });
@@ -418,10 +430,11 @@ function render() {
         cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
         cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
         cell.addEventListener('click', () => {
-          if (didDrag) return;
+          if (didDrag || _wasTouchDrag) return;
           if (cutKey) { handleCutPaste(key); return; }
           openPanel(Object.assign({}, entry, {key}));
         });
+        addTouchDrag(cell, key);
 
       } else {
         // Non-maths cell
@@ -439,6 +452,7 @@ function render() {
           cell.innerHTML = '<div class="cell-other-label">' + entry.label + '</div>';
         }
         cell.draggable = true;
+        cell.dataset.key = key;
         let didDragNM = false;
         cell.addEventListener('dragstart', e => { dragKey = key; didDragNM = true; e.dataTransfer.effectAllowed = 'move'; });
         cell.addEventListener('dragend', () => { setTimeout(() => { didDragNM = false; }, 50); });
@@ -446,10 +460,11 @@ function render() {
         cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
         cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
         cell.addEventListener('click', () => {
-          if (didDragNM) return;
+          if (didDragNM || _wasTouchDrag) return;
           if (cutKey) { handleCutPaste(key); return; }
           openCellEdit(key, entry);
         });
+        addTouchDrag(cell, key);
       }
 
       grid.appendChild(cell);
@@ -486,6 +501,71 @@ function handleCutPaste(targetKey) {
   cutKey = null;
   render();
   scheduleSave();
+}
+
+// ── Touch drag ────────────────────────────────────────────────────────────────
+let _wasTouchDrag = false;
+let _touchLastOver = null;
+
+function addTouchDrag(cell, key) {
+  let startX, startY, touchTimer, dragging = false;
+
+  cell.addEventListener('touchstart', e => {
+    if (cutKey) return;
+    const t = e.touches[0];
+    startX = t.clientX; startY = t.clientY;
+    touchTimer = setTimeout(() => {
+      dragging = true;
+      dragKey = key;
+      if (navigator.vibrate) navigator.vibrate(40);
+      const ghost = document.getElementById('drag-ghost');
+      const lbl = cell.querySelector('.cell-main,.cell-main-exam,.cell-ped-label,.cell-exam-other-label,.cell-other-label');
+      ghost.textContent = lbl ? lbl.textContent : '';
+      ghost.style.background = window.getComputedStyle(cell).backgroundColor || '#1c2030';
+      ghost.style.color = lbl ? window.getComputedStyle(lbl).color : '#e8eaf0';
+      ghost.style.left = (startX - 70) + 'px';
+      ghost.style.top  = (startY - 44) + 'px';
+      ghost.style.display = 'block';
+    }, 280);
+  }, {passive: true});
+
+  cell.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (!dragging) {
+      if (Math.hypot(t.clientX - startX, t.clientY - startY) > 8) clearTimeout(touchTimer);
+      return;
+    }
+    e.preventDefault();
+    const ghost = document.getElementById('drag-ghost');
+    ghost.style.left = (t.clientX - 70) + 'px';
+    ghost.style.top  = (t.clientY - 44) + 'px';
+    ghost.style.visibility = 'hidden';
+    const el = document.elementFromPoint(t.clientX, t.clientY);
+    ghost.style.visibility = '';
+    if (_touchLastOver) { _touchLastOver.classList.remove('drag-over'); _touchLastOver = null; }
+    const tgt = el && el.closest('[data-key]');
+    if (tgt && tgt !== cell) { tgt.classList.add('drag-over'); _touchLastOver = tgt; }
+  }, {passive: false});
+
+  function endTouch(e) {
+    clearTimeout(touchTimer);
+    const ghost = document.getElementById('drag-ghost');
+    ghost.style.display = 'none';
+    if (_touchLastOver) { _touchLastOver.classList.remove('drag-over'); _touchLastOver = null; }
+    if (dragging) {
+      _wasTouchDrag = true;
+      const t = e.changedTouches[0];
+      ghost.style.visibility = 'hidden';
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      ghost.style.visibility = '';
+      const tgt = el && el.closest('[data-key]');
+      if (tgt && tgt.dataset.key !== key) handleDrop(tgt.dataset.key);
+      setTimeout(() => { _wasTouchDrag = false; }, 50);
+    }
+    dragging = false; dragKey = null;
+  }
+  cell.addEventListener('touchend',    endTouch, {passive: true});
+  cell.addEventListener('touchcancel', endTouch, {passive: true});
 }
 
 // ── Cell edit modal ───────────────────────────────────────────────────────────
@@ -853,6 +933,10 @@ document.getElementById('lp-url-clear').addEventListener('click', async () => {
   _lpCache[lpKey] = '';
   applyLpUrl('');
 });
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/Planner/sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
