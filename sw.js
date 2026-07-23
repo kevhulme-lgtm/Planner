@@ -1,4 +1,4 @@
-const CACHE = 'planner-v4';
+const CACHE = 'planner-v5';
 const STATIC = [
   '/Planner/',
   '/Planner/index.html',
