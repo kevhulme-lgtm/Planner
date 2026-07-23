@@ -30,6 +30,10 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 .week-label{font-family:'DM Mono',monospace;font-size:0.95rem;color:#e8eaf0;min-width:130px;text-align:center;font-weight:500;}
 .week-range{font-size:0.78rem;color:#8a95a8;}
 .save-indicator{font-size:0.72rem;color:#4a5570;font-family:'DM Mono',monospace;margin-left:auto;}
+.zoom-controls{display:flex;align-items:center;gap:6px;margin-left:10px;}
+.zoom-controls button{background:#252b3d;border:1px solid #4a5570;color:#e0e6f0;width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:1rem;line-height:1;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;}
+.zoom-controls button:hover{background:#2e3650;border-color:#6a7a9a;}
+#zoomLabel{font-family:'DM Mono',monospace;font-size:0.75rem;color:#8a95a8;min-width:38px;text-align:center;}
 .save-indicator.saving{color:#8a95a8;}
 .save-indicator.saved{color:#7ecfaa;}
 .grid{display:grid;grid-template-columns:80px repeat(5,1fr);gap:3px;background:#3a4258;border-radius:10px;overflow:hidden;border:2px solid #3a4258;min-width:600px;}
@@ -40,7 +44,7 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
 .slot-label{background:#1e2336;padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:2px solid #3a4258;}
 .slot-name{font-size:0.68rem;font-family:'DM Mono',monospace;color:#c0c8d8;font-weight:500;}
 .slot-time{font-size:0.6rem;color:#6a75a0;margin-top:2px;}
-.cell{min-height:52px;padding:5px 7px;transition:all 0.1s;position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-y;}
+.cell{min-height:52px;padding:5px 7px;transition:all 0.1s;position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
 #drag-ghost{display:none;position:fixed;pointer-events:none;z-index:9999;padding:7px 12px;border-radius:6px;font-size:0.78rem;font-family:'DM Sans',sans-serif;font-weight:600;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:2px solid #7ecfaa;opacity:0.9;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
 .cell-empty{background:#12151f;}
 .cell-empty.drag-over{outline:2px dashed #7ecfaa;outline-offset:-2px;background:#1a2030;}
@@ -164,6 +168,11 @@ h1{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;letter-spaci
     <button id="btnNext">Next &#x2192;</button>
     <span class="week-range" id="weekRange"></span>
     <span class="save-indicator" id="save-indicator"></span>
+    <div class="zoom-controls">
+      <button id="btnZoomOut" title="Zoom out">&#x2212;</button>
+      <span id="zoomLabel">100%</span>
+      <button id="btnZoomIn" title="Zoom in">&#x2b;</button>
+    </div>
   </div>
   <div class="grid-wrap"><div class="grid" id="grid"></div></div>
 </div>
@@ -339,6 +348,15 @@ function scheduleSave() {
     ind.className = 'save-indicator saved';
     setTimeout(() => { ind.textContent = ''; ind.className = 'save-indicator'; }, 3000);
   }, 1500);
+}
+
+// ── Zoom ──────────────────────────────────────────────────────────────────────
+let gridZoom = parseFloat(localStorage.getItem('plannerZoom') || '1');
+
+function applyZoom() {
+  document.getElementById('grid').style.zoom = gridZoom;
+  document.getElementById('zoomLabel').textContent = Math.round(gridZoom * 100) + '%';
+  localStorage.setItem('plannerZoom', gridZoom);
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -650,6 +668,7 @@ async function initPlan() {
     document.getElementById('planner').style.display = 'block';
     buildLegend();
     render();
+    applyZoom();
   } catch(err) {
     document.getElementById('loading-state').textContent = 'Error loading plan: ' + err.message;
   }
@@ -657,6 +676,8 @@ async function initPlan() {
 
 document.getElementById('btnPrev').addEventListener('click', () => { weekIdx--; render(); });
 document.getElementById('btnNext').addEventListener('click', () => { weekIdx++; render(); });
+document.getElementById('btnZoomOut').addEventListener('click', () => { gridZoom = Math.max(0.4, +(gridZoom - 0.1).toFixed(1)); applyZoom(); });
+document.getElementById('btnZoomIn').addEventListener('click',  () => { gridZoom = Math.min(2.0, +(gridZoom + 0.1).toFixed(1)); applyZoom(); });
 
 initPlan();
 
