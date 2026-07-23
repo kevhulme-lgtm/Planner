@@ -448,7 +448,7 @@ function render() {
         cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
         cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
         cell.addEventListener('click', () => {
-          if (didDrag || _wasTouchDrag) return;
+          if (didDrag || _lpActive) return;
           if (cutKey) { handleCutPaste(key); return; }
           openPanel(Object.assign({}, entry, {key}));
         });
@@ -478,7 +478,7 @@ function render() {
         cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
         cell.addEventListener('drop', () => { cell.classList.remove('drag-over'); if (cutKey) { handleCutPaste(key); } else { handleDrop(key); } });
         cell.addEventListener('click', () => {
-          if (didDragNM || _wasTouchDrag) return;
+          if (didDragNM || _lpActive) return;
           if (cutKey) { handleCutPaste(key); return; }
           openCellEdit(key, entry);
         });
@@ -521,69 +521,38 @@ function handleCutPaste(targetKey) {
   scheduleSave();
 }
 
-// ── Touch drag ────────────────────────────────────────────────────────────────
+// ── Touch long-press → cut mode ───────────────────────────────────────────────
+// (Drag-and-drop can't coexist with native scroll on iOS; long-press activates
+//  cut mode instead — tap the target cell to complete the move.)
 let _wasTouchDrag = false;
-let _touchLastOver = null;
+let _lpActive = false; // true for ~400ms after long-press fires, suppresses click
 
 function addTouchDrag(cell, key) {
-  let startX, startY, touchTimer, dragging = false;
+  let moved = false, pressTimer = null;
 
-  cell.addEventListener('touchstart', e => {
+  cell.addEventListener('touchstart', () => {
+    moved = false;
     if (cutKey) return;
-    const t = e.touches[0];
-    startX = t.clientX; startY = t.clientY;
-    touchTimer = setTimeout(() => {
-      dragging = true;
-      dragKey = key;
-      if (navigator.vibrate) navigator.vibrate(40);
-      const ghost = document.getElementById('drag-ghost');
-      const lbl = cell.querySelector('.cell-main,.cell-main-exam,.cell-ped-label,.cell-exam-other-label,.cell-other-label');
-      ghost.textContent = lbl ? lbl.textContent : '';
-      ghost.style.background = window.getComputedStyle(cell).backgroundColor || '#1c2030';
-      ghost.style.color = lbl ? window.getComputedStyle(lbl).color : '#e8eaf0';
-      ghost.style.left = (startX - 70) + 'px';
-      ghost.style.top  = (startY - 44) + 'px';
-      ghost.style.display = 'block';
-    }, 280);
+    pressTimer = setTimeout(() => {
+      if (moved) return;
+      if (navigator.vibrate) navigator.vibrate(50);
+      _lpActive = true;
+      setTimeout(() => { _lpActive = false; }, 400);
+      cutKey = key;
+      render();
+      const ind = document.getElementById('save-indicator');
+      ind.textContent = '✂ Held — tap any slot to move it there';
+      ind.className = 'save-indicator saving';
+    }, 500);
   }, {passive: true});
 
-  cell.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    if (!dragging) {
-      if (Math.hypot(t.clientX - startX, t.clientY - startY) > 8) clearTimeout(touchTimer);
-      return;
-    }
-    e.preventDefault();
-    const ghost = document.getElementById('drag-ghost');
-    ghost.style.left = (t.clientX - 70) + 'px';
-    ghost.style.top  = (t.clientY - 44) + 'px';
-    ghost.style.visibility = 'hidden';
-    const el = document.elementFromPoint(t.clientX, t.clientY);
-    ghost.style.visibility = '';
-    if (_touchLastOver) { _touchLastOver.classList.remove('drag-over'); _touchLastOver = null; }
-    const tgt = el && el.closest('[data-key]');
-    if (tgt && tgt !== cell) { tgt.classList.add('drag-over'); _touchLastOver = tgt; }
-  }, {passive: false});
+  cell.addEventListener('touchmove', () => {
+    moved = true;
+    clearTimeout(pressTimer);
+  }, {passive: true});
 
-  function endTouch(e) {
-    clearTimeout(touchTimer);
-    const ghost = document.getElementById('drag-ghost');
-    ghost.style.display = 'none';
-    if (_touchLastOver) { _touchLastOver.classList.remove('drag-over'); _touchLastOver = null; }
-    if (dragging) {
-      _wasTouchDrag = true;
-      const t = e.changedTouches[0];
-      ghost.style.visibility = 'hidden';
-      const el = document.elementFromPoint(t.clientX, t.clientY);
-      ghost.style.visibility = '';
-      const tgt = el && el.closest('[data-key]');
-      if (tgt && tgt.dataset.key !== key) handleDrop(tgt.dataset.key);
-      setTimeout(() => { _wasTouchDrag = false; }, 50);
-    }
-    dragging = false; dragKey = null;
-  }
-  cell.addEventListener('touchend',    endTouch, {passive: true});
-  cell.addEventListener('touchcancel', endTouch, {passive: true});
+  cell.addEventListener('touchend',    () => clearTimeout(pressTimer), {passive: true});
+  cell.addEventListener('touchcancel', () => clearTimeout(pressTimer), {passive: true});
 }
 
 // ── Cell edit modal ───────────────────────────────────────────────────────────
